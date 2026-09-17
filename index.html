@@ -1571,8 +1571,112 @@
         }
 
         .search-modal-body {
-            max-height: 55vh;
-            min-height: 220px;
+            max-height: 60vh;
+            min-height: 240px;
+            overflow-y: auto;
+            padding: 16px 20px;
+        }
+
+        .search-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .search-item:hover,
+        .search-item.selected {
+            background-color: var(--bg-hover);
+            border-color: var(--primary);
+            transform: translateX(3px);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .search-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .search-item-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background-color: var(--bg-surface);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .search-item-text {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .search-item-title {
+            font-weight: 700;
+            font-size: 13.5px;
+            color: var(--text-main);
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-item-subtitle {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-highlight {
+            background-color: rgba(217, 70, 239, 0.25);
+            color: var(--text-main);
+            font-weight: 800;
+            border-radius: 3px;
+            padding: 0 3px;
+        }
+
+        .search-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 13px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-pill);
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-xs);
+        }
+
+        .search-chip:hover {
+            background-color: var(--bg-hover);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
         }
 
         body.modal-open {
@@ -2797,6 +2901,428 @@
         .export-type-csv { background: #ECFDF5; color: #059669; }
         .export-type-pdf { background: #FEF2F2; color: #DC2626; }
         .export-type-print { background: #EFF6FF; color: #2563EB; }
+
+        /* ==========================================================================
+           WEBCRAFT GOODS — ABOUT DEVELOPER MODULE STYLES
+           ========================================================================== */
+        .about-dev-container {
+            max-width: 860px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            padding-bottom: 40px;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .about-dev-hero-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-xl);
+            padding: 36px 32px;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .about-dev-hero-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent, var(--primary)));
+            border-radius: var(--border-radius-xl) var(--border-radius-xl) 0 0;
+        }
+
+        .about-dev-profile-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 28px;
+        }
+
+        .about-dev-avatar-wrapper {
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .about-dev-avatar-img,
+        .about-dev-avatar-fallback {
+            width: 104px;
+            height: 104px;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            border: 3px solid var(--bg-surface);
+        }
+
+        .about-dev-avatar-img {
+            object-fit: cover;
+        }
+
+        .about-dev-avatar-fallback {
+            background: linear-gradient(135deg, var(--primary), var(--accent, #9333ea));
+            color: #FFFFFF;
+            font-size: 42px;
+            font-weight: 800;
+            font-family: var(--font-sans);
+            letter-spacing: -1px;
+            user-select: none;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .about-dev-verified-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--bg-card);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .about-dev-profile-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .about-dev-meta-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .about-dev-name {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.5px;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .about-dev-role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: var(--border-radius-pill);
+            background-color: var(--primary-soft, var(--bg-subtle));
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            border: 1px solid var(--border-color);
+        }
+
+        .about-dev-role-badge::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: var(--primary);
+        }
+
+        .about-dev-brand-tagline {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .about-dev-brand-highlight {
+            color: var(--text-main);
+            font-weight: 700;
+        }
+
+        .about-dev-bio {
+            font-size: 14px;
+            line-height: 1.68;
+            color: var(--text-secondary);
+            margin: 0;
+            max-width: 680px;
+        }
+
+        /* Brand Card Section */
+        .about-dev-brand-card {
+            background-color: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .about-dev-brand-logo-fallback {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--border-radius-md);
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 15px;
+            color: var(--primary);
+            box-shadow: var(--shadow-xs);
+            flex-shrink: 0;
+        }
+
+        .about-dev-brand-logo-img {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--border-radius-md);
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .about-dev-brand-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .about-dev-brand-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+
+        .about-dev-brand-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .about-dev-brand-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            padding: 2px 7px;
+            border-radius: 4px;
+            background-color: var(--bg-surface);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .about-dev-brand-desc {
+            font-size: 12.5px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        /* Action Buttons Area */
+        .about-dev-actions-wrapper {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .about-dev-actions-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 14px;
+        }
+
+        .about-dev-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+
+        .about-dev-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 16px 18px;
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            text-decoration: none;
+            color: var(--text-main);
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            position: relative;
+            box-shadow: var(--shadow-xs);
+        }
+
+        .about-dev-action-btn:hover {
+            border-color: var(--primary);
+            background-color: var(--bg-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        }
+
+        .about-dev-action-btn:active {
+            transform: translateY(0);
+        }
+
+        .about-dev-action-btn:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        .about-dev-btn-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .about-dev-btn-icon-box {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background-color: var(--bg-subtle);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-fast);
+        }
+
+        .about-dev-action-btn:hover .about-dev-btn-icon-box {
+            background-color: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .about-dev-btn-arrow {
+            color: var(--text-muted);
+            transition: transform var(--transition-fast), color var(--transition-fast);
+        }
+
+        .about-dev-action-btn:hover .about-dev-btn-arrow {
+            color: var(--primary);
+            transform: translate(2px, -2px);
+        }
+
+        .about-dev-btn-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 3px;
+        }
+
+        .about-dev-btn-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        /* Quality & Trust Badges */
+        .about-dev-footer-badges {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 8px;
+            padding: 12px 18px;
+            color: var(--text-muted);
+            font-size: 12px;
+        }
+
+        .about-dev-footer-badge-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            .about-dev-hero-card {
+                padding: 24px 20px;
+            }
+
+            .about-dev-profile-row {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                gap: 18px;
+            }
+
+            .about-dev-meta-header {
+                justify-content: center;
+            }
+
+            .about-dev-brand-tagline {
+                justify-content: center;
+            }
+
+            .about-dev-bio {
+                text-align: left;
+            }
+
+            .about-dev-actions-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .about-dev-action-btn {
+                flex-direction: row;
+                align-items: center;
+                gap: 14px;
+                padding: 14px 16px;
+            }
+
+            .about-dev-btn-top {
+                width: auto;
+                margin-bottom: 0;
+            }
+
+            .about-dev-btn-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .about-dev-brand-card {
+                flex-direction: column;
+                text-align: center;
+                padding: 16px;
+            }
+
+            .about-dev-brand-title-row {
+                justify-content: center;
+            }
+        }
+
+        @media (min-width: 769px) and (max-width: 991px) {
+            .about-dev-actions-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            
+            .about-dev-action-btn {
+                padding: 14px 12px;
+            }
+        }
     </style>
 </head>
 
@@ -2833,6 +3359,25 @@
         <symbol id="icon-user" viewBox="0 0 24 24">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
+        </symbol>
+        <symbol id="icon-mail" viewBox="0 0 24 24">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+        </symbol>
+        <symbol id="icon-instagram" viewBox="0 0 24 24">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+        </symbol>
+        <symbol id="icon-shopping-bag" viewBox="0 0 24 24">
+            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <path d="M16 10a4 4 0 0 1-8 0"></path>
+        </symbol>
+        <symbol id="icon-external-link" viewBox="0 0 24 24">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+            <polyline points="15 3 21 3 21 9"></polyline>
+            <line x1="10" y1="14" x2="21" y2="3"></line>
         </symbol>
         <symbol id="icon-heart" viewBox="0 0 24 24">
             <path
@@ -3439,6 +3984,12 @@
                             </svg>
                             <span>Help & Quick Start</span>
                         </div>
+                        <div class="nav-item" data-view="about-developer" onclick="navigateTo('about-developer')">
+                            <svg class="icon">
+                                <use href="#icon-user"></use>
+                            </svg>
+                            <span>About Developer</span>
+                        </div>
                     </div>
                 </div>
 
@@ -3533,13 +4084,6 @@
                     <button class="btn btn-icon-only" onclick="toggleDarkMode()" title="Toggle Light/Dark Mode">
                         <svg class="icon" id="headerModeIcon">
                             <use href="#icon-moon"></use>
-                        </svg>
-                    </button>
-
-                    <!-- Print View Button -->
-                    <button class="btn btn-icon-only btn-header-print" onclick="window.print()" title="Print / Save as PDF">
-                        <svg class="icon">
-                            <use href="#icon-printer"></use>
                         </svg>
                     </button>
 
@@ -3702,16 +4246,23 @@
 
     <!-- MODAL: GLOBAL SEARCH -->
     <div class="modal-backdrop" id="modalSearch">
-        <div class="modal-window modal-lg">
-            <div class="modal-header">
-                <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
-                    <svg class="icon" style="color: var(--text-muted);">
+        <div class="modal-window modal-lg" style="max-width: 760px;">
+            <div class="modal-header" style="border-bottom: 1px solid var(--border-color); padding: 14px 20px;">
+                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                    <svg class="icon" style="color: var(--primary); width: 20px; height: 20px; flex-shrink: 0;">
                         <use href="#icon-search"></use>
                     </svg>
                     <input type="text" id="globalSearchInput"
-                        placeholder="Search tasks, events, notes, meals, recipes, bills, contacts..."
-                        style="border: none; outline: none; background: transparent; font-size: 16px; width: 100%; color: var(--text-main);"
-                        oninput="handleGlobalSearch(this.value)">
+                        placeholder="Search tasks, events, meals, budget, notes, contacts, pages..."
+                        style="border: none; outline: none; background: transparent; font-size: 16px; width: 100%; color: var(--text-main); font-family: var(--font-sans);"
+                        oninput="handleGlobalSearch(this.value)"
+                        onkeydown="handleSearchKeyDown(event)"
+                        autocomplete="off">
+                    <button id="globalSearchClearBtn" onclick="clearGlobalSearch()" type="button"
+                        style="display: none; background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px;"
+                        title="Clear search">
+                        <svg class="icon icon-sm"><use href="#icon-x"></use></svg>
+                    </button>
                 </div>
                 <button class="modal-close-btn" onclick="closeModal('modalSearch')" type="button"
                     aria-label="Close dialog"><svg class="icon">
@@ -3719,11 +4270,19 @@
                     </svg></button>
             </div>
             <div class="modal-body search-modal-body">
-                <div id="globalSearchResults">
+                <div id="searchResults" class="search-results-list">
                     <div style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
                         Type anything to search across all organizer modules...
                     </div>
                 </div>
+            </div>
+            <div class="modal-footer" style="padding: 10px 20px; border-top: 1px solid var(--border-color); background-color: var(--bg-subtle); display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--text-muted);">
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                    <span><kbd class="search-kbd">↑</kbd> <kbd class="search-kbd">↓</kbd> navigate</span>
+                    <span><kbd class="search-kbd">Enter</kbd> select</span>
+                    <span><kbd class="search-kbd">Esc</kbd> close</span>
+                </div>
+                <div id="searchMatchCount" style="font-weight: 600;"></div>
             </div>
         </div>
     </div>
@@ -4648,7 +5207,8 @@
             'analytics': { title: 'Analytics Center', subtitle: 'Productivity, Spending & Routine Insights' },
             'monthly-review': { title: 'Monthly Review', subtitle: 'Reflections, Accomplishments & Future Focus' },
             'settings': { title: 'Settings & Data Hub', subtitle: 'Personalization, Backup, Restore & Preferences' },
-            'about': { title: 'Help & Quick Start Guide', subtitle: 'Learn how to get the most from Mom Life Organizer Pro' }
+            'about': { title: 'Help & Quick Start Guide', subtitle: 'Learn how to get the most from Mom Life Organizer Pro' },
+            'about-developer': { title: 'About Developer', subtitle: 'Meet Karim & Webcraft Goods' }
         };
 
         function navigateTo(viewName) {
@@ -4742,6 +5302,7 @@
                 case 'monthly-review': renderMonthlyReviewView(workspace); break;
                 case 'settings': renderSettingsView(workspace); break;
                 case 'about': renderAboutView(workspace); break;
+                case 'about-developer': renderAboutDeveloperView(workspace); break;
                 default: renderDashboardView(workspace);
             }
         }
@@ -9861,105 +10422,716 @@
       `;
         }
 
+        /* =========================================
+           WEBCRAFT GOODS — ABOUT DEVELOPER CONFIG
+           ========================================= */
+        const developerConfig = {
+            name: "Karim",
+            role: "Creator & Developer",
+            brand: "Webcraft Goods",
+            bio: "Hi, I'm Karim, the creator behind Webcraft Goods. I design premium digital planners, productivity tools, dashboards, trackers, and web-based templates designed to make everyday organization and productivity easier.\n\nMy goal is to create beautiful, practical, and easy-to-use digital products with modern interfaces, thoughtful features, and a smooth user experience.",
+            brandDescription: "Premium digital tools designed to simplify planning, productivity, organization, and everyday workflows.",
+            profileImage: "",
+            brandLogo: "",
+            supportEmail: "webcraftgoods@gmail.com",
+            supportSubject: "Webcraft Goods — Product Support",
+            instagramUsername: "@webcraftgoods",
+            instagramUrl: "https://www.instagram.com/webcraftgoods/",
+            etsyUrl: "https://www.etsy.com/shop/WebCraftGoods"
+        };
+
+        function renderAboutDeveloperView(container) {
+            const mailtoUrl = `mailto:${developerConfig.supportEmail}?subject=${encodeURIComponent(developerConfig.supportSubject)}`;
+
+            // Avatar rendering: use configured image if available, with robust fallback
+            const avatarHtml = developerConfig.profileImage ? `
+                <img src="${escapeHtml(developerConfig.profileImage)}" 
+                     alt="${escapeHtml(developerConfig.name)}" 
+                     class="about-dev-avatar-img" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="about-dev-avatar-fallback" style="display: none;">${escapeHtml(developerConfig.name.charAt(0) || 'K')}</div>
+            ` : `
+                <div class="about-dev-avatar-fallback">${escapeHtml(developerConfig.name.charAt(0) || 'K')}</div>
+            `;
+
+            // Brand logo rendering: use configured logo if available, with fallback
+            const brandLogoHtml = developerConfig.brandLogo ? `
+                <img src="${escapeHtml(developerConfig.brandLogo)}" 
+                     alt="${escapeHtml(developerConfig.brand)}" 
+                     class="about-dev-brand-logo-img" 
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="about-dev-brand-logo-fallback" style="display: none;">WG</div>
+            ` : `
+                <div class="about-dev-brand-logo-fallback">WG</div>
+            `;
+
+            // Format paragraphs in bio safely
+            const bioParagraphs = (developerConfig.bio || '').split('\n\n').filter(p => p.trim()).map(p => `
+                <p class="about-dev-bio" style="margin-bottom: 12px;">${escapeHtml(p.trim())}</p>
+            `).join('');
+
+            container.innerHTML = `
+                <div class="about-dev-container">
+                    <!-- Hero Developer Profile Card -->
+                    <div class="about-dev-hero-card">
+                        <div class="about-dev-profile-row">
+                            <!-- Avatar with Verified Badge -->
+                            <div class="about-dev-avatar-wrapper">
+                                ${avatarHtml}
+                                <div class="about-dev-verified-badge" title="Verified Creator" aria-label="Verified Creator">
+                                    <svg class="icon icon-sm" style="width: 14px; height: 14px; stroke-width: 2.5;"><use href="#icon-check"></use></svg>
+                                </div>
+                            </div>
+
+                            <!-- Developer Information -->
+                            <div class="about-dev-profile-main">
+                                <div class="about-dev-meta-header">
+                                    <h1 class="about-dev-name">${escapeHtml(developerConfig.name)}</h1>
+                                    <span class="about-dev-role-badge">${escapeHtml(developerConfig.role)}</span>
+                                </div>
+                                <div class="about-dev-brand-tagline">
+                                    <span>Crafted with passion for</span>
+                                    <span class="about-dev-brand-highlight">${escapeHtml(developerConfig.brand)}</span>
+                                </div>
+                                <div class="about-dev-bio-container">
+                                    ${bioParagraphs}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Webcraft Goods Brand Highlight Strip -->
+                        <div class="about-dev-brand-card">
+                            ${brandLogoHtml}
+                            <div class="about-dev-brand-details">
+                                <div class="about-dev-brand-title-row">
+                                    <span class="about-dev-brand-title">${escapeHtml(developerConfig.brand)}</span>
+                                    <span class="about-dev-brand-badge">Official Brand</span>
+                                </div>
+                                <p class="about-dev-brand-desc">${escapeHtml(developerConfig.brandDescription)}</p>
+                            </div>
+                        </div>
+
+                        <!-- Primary Actions -->
+                        <div class="about-dev-actions-wrapper">
+                            <div class="about-dev-actions-label">Direct Support & Channels</div>
+                            <div class="about-dev-actions-grid">
+                                <!-- Action 1: Contact Support -->
+                                <a href="${mailtoUrl}" class="about-dev-action-btn" id="aboutDevContactBtn" title="Contact Support via Email">
+                                    <div class="about-dev-btn-top">
+                                        <div class="about-dev-btn-icon-box">
+                                            <svg class="icon icon-md"><use href="#icon-mail"></use></svg>
+                                        </div>
+                                        <svg class="icon icon-sm about-dev-btn-arrow"><use href="#icon-external-link"></use></svg>
+                                    </div>
+                                    <div class="about-dev-btn-content">
+                                        <div class="about-dev-btn-title">Contact Support</div>
+                                        <div class="about-dev-btn-subtitle">${escapeHtml(developerConfig.supportEmail)}</div>
+                                    </div>
+                                </a>
+
+                                <!-- Action 2: Instagram -->
+                                <a href="${escapeHtml(developerConfig.instagramUrl)}" target="_blank" rel="noopener noreferrer" class="about-dev-action-btn" id="aboutDevInstagramBtn" title="Follow on Instagram">
+                                    <div class="about-dev-btn-top">
+                                        <div class="about-dev-btn-icon-box">
+                                            <svg class="icon icon-md"><use href="#icon-instagram"></use></svg>
+                                        </div>
+                                        <svg class="icon icon-sm about-dev-btn-arrow"><use href="#icon-external-link"></use></svg>
+                                    </div>
+                                    <div class="about-dev-btn-content">
+                                        <div class="about-dev-btn-title">Follow on Instagram</div>
+                                        <div class="about-dev-btn-subtitle">${escapeHtml(developerConfig.instagramUsername)}</div>
+                                    </div>
+                                </a>
+
+                                <!-- Action 3: Etsy Store -->
+                                <a href="${escapeHtml(developerConfig.etsyUrl)}" target="_blank" rel="noopener noreferrer" class="about-dev-action-btn" id="aboutDevEtsyBtn" title="Visit Webcraft Goods Etsy Store">
+                                    <div class="about-dev-btn-top">
+                                        <div class="about-dev-btn-icon-box">
+                                            <svg class="icon icon-md"><use href="#icon-shopping-bag"></use></svg>
+                                        </div>
+                                        <svg class="icon icon-sm about-dev-btn-arrow"><use href="#icon-external-link"></use></svg>
+                                    </div>
+                                    <div class="about-dev-btn-content">
+                                        <div class="about-dev-btn-title">Visit Etsy Store</div>
+                                        <div class="about-dev-btn-subtitle">Official Etsy Shop</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trust & Quality Strip -->
+                    <div class="about-dev-footer-badges">
+                        <span class="about-dev-footer-badge-item">
+                            <svg class="icon icon-sm" style="color: var(--primary);"><use href="#icon-sparkles"></use></svg>
+                            <span>Webcraft Goods Digital Product</span>
+                        </span>
+                        <span>•</span>
+                        <span class="about-dev-footer-badge-item">
+                            <svg class="icon icon-sm" style="color: var(--color-finances, #10B981);"><use href="#icon-check-circle"></use></svg>
+                            <span>100% Offline & Private</span>
+                        </span>
+                        <span>•</span>
+                        <span class="about-dev-footer-badge-item">
+                            <svg class="icon icon-sm" style="color: var(--primary);"><use href="#icon-heart"></use></svg>
+                            <span>Handcrafted with Care</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
         // ==========================================================================
         // GLOBAL SEARCH SYSTEM
         // ==========================================================================
 
+        let selectedSearchIndex = -1;
+
+        const SEARCHABLE_PAGES = [
+            { title: 'Dashboard', view: 'dashboard', subtitle: 'Main family and daily overview', keywords: 'home summary kpi priority schedule', icon: 'icon-dashboard', type: 'Page' },
+            { title: 'Today View', view: 'today', subtitle: 'Today\'s focus, priorities and time blocks', keywords: 'today daily focus agenda routine time', icon: 'icon-check-circle', type: 'Page' },
+            { title: 'Daily Planner', view: 'daily-planner', subtitle: 'Time-blocked daily schedule and priorities', keywords: 'daily day routine hours planner', icon: 'icon-calendar', type: 'Page' },
+            { title: 'Weekly Planner', view: 'weekly-planner', subtitle: '7-day overview, weekly goals and meal rhythm', keywords: 'week weekly 7-day goals overview', icon: 'icon-calendar', type: 'Page' },
+            { title: 'Monthly Planner', view: 'monthly-planner', subtitle: 'Monthly focus, calendar and key milestones', keywords: 'month monthly milestone goals', icon: 'icon-calendar', type: 'Page' },
+            { title: 'Calendar & Schedule', view: 'calendar', subtitle: 'Full interactive monthly calendar and event logs', keywords: 'calendar events dates appointments schedule', icon: 'icon-calendar', type: 'Page' },
+            { title: 'Tasks & Master To-Dos', view: 'tasks', subtitle: 'Categorized to-do list with priorities and due dates', keywords: 'tasks todos checklist priorities pending completed', icon: 'icon-check-square', type: 'Page' },
+            { title: 'Family Hub', view: 'family-hub', subtitle: 'Family profiles, roles, birthdates and notes', keywords: 'family members hub mom dad kids profiles', icon: 'icon-users', type: 'Page' },
+            { title: 'Kids Tracker', view: 'kids', subtitle: 'Kids routines, schools, healthcare and milestones', keywords: 'kids children school grade milestones allergies', icon: 'icon-smile', type: 'Page' },
+            { title: 'School & Activities', view: 'school', subtitle: 'School events, teachers, supplies and terms', keywords: 'school supplies teachers homework terms classes', icon: 'icon-book-open', type: 'Page' },
+            { title: 'Appointments', view: 'appointments', subtitle: 'Doctor, dentist, school and personal appointments', keywords: 'appointments doctor dentist medical visit checkup', icon: 'icon-clock', type: 'Page' },
+            { title: 'Birthdays & Celebrations', view: 'birthdays', subtitle: 'Upcoming birthdays, anniversaries and gift lists', keywords: 'birthdays anniversaries celebrations gifts party', icon: 'icon-gift', type: 'Page' },
+            { title: 'Home Dashboard', view: 'home-dashboard', subtitle: 'Household chores, cleaning zones and upkeep', keywords: 'home house household zones chores cleaning', icon: 'icon-home', type: 'Page' },
+            { title: 'Cleaning Schedule', view: 'cleaning', subtitle: 'Daily, weekly and deep cleaning routines by zone', keywords: 'cleaning clean zones checklist routine chores', icon: 'icon-sparkles', type: 'Page' },
+            { title: 'Chores Tracker', view: 'chores', subtitle: 'Assigned family and kids chores tracker', keywords: 'chores allowance kids tasks assigned', icon: 'icon-check', type: 'Page' },
+            { title: 'Home Maintenance', view: 'maintenance', subtitle: 'Appliance care, repairs and seasonal tasks', keywords: 'maintenance repairs filter seasonal home upkeep', icon: 'icon-wrench', type: 'Page' },
+            { title: 'Home Inventory', view: 'inventory', subtitle: 'Valuables, warranties, emergency stock and items', keywords: 'inventory items storage valuables warranty', icon: 'icon-box', type: 'Page' },
+            { title: 'Meal Planner', view: 'meal-planner', subtitle: 'Weekly breakfast, lunch, dinner and snacks plan', keywords: 'meals meal dinner lunch breakfast menu food', icon: 'icon-utensils', type: 'Page' },
+            { title: 'Family Recipe Book', view: 'recipes', subtitle: 'Saved family recipes, ingredients and instructions', keywords: 'recipes cooking dinner food baking ingredients', icon: 'icon-utensils', type: 'Page' },
+            { title: 'Grocery Shopping List', view: 'grocery', subtitle: 'Categorized supermarket grocery checklist', keywords: 'grocery shopping supermarket market buy food', icon: 'icon-shopping-cart', type: 'Page' },
+            { title: 'Pantry & Freezer Inventory', view: 'pantry', subtitle: 'Pantry staples, freezer items and expiration dates', keywords: 'pantry freezer food stock storage canned', icon: 'icon-box', type: 'Page' },
+            { title: 'Financial Dashboard', view: 'financial-dashboard', subtitle: 'Income, budget status, bills and savings overview', keywords: 'finances money finance budget overview cash wealth', icon: 'icon-wallet', type: 'Page' },
+            { title: 'Budget Allocations', view: 'budget', subtitle: 'Category spending budgets and monthly targets', keywords: 'budget spending limits allocation money monthly', icon: 'icon-bar-chart-2', type: 'Page' },
+            { title: 'Expense Tracker', view: 'expenses', subtitle: 'Logged daily family expenses and receipts', keywords: 'expenses spending cost outflow receipts purchase', icon: 'icon-credit-card', type: 'Page' },
+            { title: 'Bills & Utilities', view: 'bills', subtitle: 'Upcoming bill due dates and recurring payments', keywords: 'bills utilities electricity water internet rent mortgage due', icon: 'icon-receipt', type: 'Page' },
+            { title: 'Subscriptions', view: 'subscriptions', subtitle: 'Streaming, software and recurring memberships', keywords: 'subscriptions streaming apps monthly recurring', icon: 'icon-credit-card', type: 'Page' },
+            { title: 'Savings Goals', view: 'savings', subtitle: 'Emergency fund, vacation and family savings targets', keywords: 'savings goals funds piggy bank nest egg emergency', icon: 'icon-piggy-bank', type: 'Page' },
+            { title: 'Habit Tracker', view: 'habits', subtitle: 'Daily habit streaks, consistency and routines', keywords: 'habits streak routine consistency daily water read', icon: 'icon-target', type: 'Page' },
+            { title: 'Goals & Vision', view: 'goals', subtitle: 'Personal, family, career and financial goals', keywords: 'goals vision targets dreams milestone', icon: 'icon-star', type: 'Page' },
+            { title: 'Self-Care Routine', view: 'self-care', subtitle: 'Mindfulness, reading, hobbies and me-time tracker', keywords: 'self-care me-time meditation relaxation wellness mind', icon: 'icon-heart', type: 'Page' },
+            { title: 'Health & Wellness', view: 'wellness', subtitle: 'Water intake, sleep, exercise and mood logs', keywords: 'wellness health fitness sleep water mood exercise', icon: 'icon-droplet', type: 'Page' },
+            { title: 'Document Vault', view: 'documents', subtitle: 'Important documents, policies, IDs and certificates', keywords: 'documents files passport insurance policy records id', icon: 'icon-file-text', type: 'Page' },
+            { title: 'Emergency Info', view: 'emergency', subtitle: 'Emergency contacts, medical info and protocols', keywords: 'emergency 911 urgent hospital doctor safety police', icon: 'icon-alert-triangle', type: 'Page' },
+            { title: 'Contact Directory', view: 'contacts', subtitle: 'Family, friends, services and emergency contacts', keywords: 'contacts phone email address directory phonebook', icon: 'icon-phone-call', type: 'Page' },
+            { title: 'Notes & Pinboard', view: 'notes', subtitle: 'Color-coded notes, ideas and quick thoughts', keywords: 'notes ideas memo thoughts lists sticky pinboard', icon: 'icon-file-text', type: 'Page' },
+            { title: 'Analytics Center', view: 'analytics', subtitle: 'Productivity trends, routine completion and stats', keywords: 'analytics stats reports charts insights metrics', icon: 'icon-bar-chart-2', type: 'Page' },
+            { title: 'Monthly Review', view: 'monthly-review', subtitle: 'Monthly reflections, achievements and wins', keywords: 'review monthly recap reflection wins achievements', icon: 'icon-star', type: 'Page' },
+            { title: 'Settings & Data Hub', view: 'settings', subtitle: 'Themes, dark mode, CSV/PDF exports and data backup', keywords: 'settings export backup csv pdf theme restore reset data', icon: 'icon-settings', type: 'Page' },
+            { title: 'Help & Quick Start', view: 'about', subtitle: 'Feature guide, architecture and tips', keywords: 'help guide about faq instructions start', icon: 'icon-sparkles', type: 'Page' },
+            { title: 'About Developer', view: 'about-developer', subtitle: 'Meet Karim & Webcraft Goods, Support, Instagram, Etsy', keywords: 'developer creator karim webcraft goods etsy instagram support email author profile', icon: 'icon-user', type: 'Page' }
+        ];
+
         function openGlobalSearchModal() {
-            const modal = document.getElementById('modalSearch');
+            openModal('modalSearch');
             const input = document.getElementById('globalSearchInput');
-            if (modal) {
-                modal.classList.add('open');
-                if (input) {
-                    input.value = '';
-                    input.focus();
+            if (input) {
+                input.value = '';
+                setTimeout(() => input.focus(), 60);
+            }
+            const clearBtn = document.getElementById('globalSearchClearBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+            selectedSearchIndex = -1;
+            handleGlobalSearch('');
+        }
+
+        function clearGlobalSearch() {
+            const input = document.getElementById('globalSearchInput');
+            if (input) {
+                input.value = '';
+                input.focus();
+            }
+            const clearBtn = document.getElementById('globalSearchClearBtn');
+            if (clearBtn) clearBtn.style.display = 'none';
+            selectedSearchIndex = -1;
+            handleGlobalSearch('');
+        }
+
+        function quickFilterSearch(keyword) {
+            const input = document.getElementById('globalSearchInput');
+            if (input) {
+                input.value = keyword;
+                input.focus();
+            }
+            handleGlobalSearch(keyword);
+        }
+
+        function handleSearchKeyDown(e) {
+            const items = document.querySelectorAll('.search-item');
+            if (!items.length) return;
+
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                selectedSearchIndex = (selectedSearchIndex + 1) % items.length;
+                updateSearchSelection(items);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                selectedSearchIndex = (selectedSearchIndex - 1 + items.length) % items.length;
+                updateSearchSelection(items);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const targetIdx = selectedSearchIndex >= 0 ? selectedSearchIndex : 0;
+                if (items[targetIdx]) {
+                    items[targetIdx].click();
                 }
-                handleGlobalSearch('');
+            }
+        }
+
+        function updateSearchSelection(items) {
+            items.forEach((item, idx) => {
+                if (idx === selectedSearchIndex) {
+                    item.classList.add('selected');
+                    item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+        }
+
+        function highlightMatch(text, query) {
+            if (!text || !query) return escapeHtml(text || '');
+            const escapedText = escapeHtml(String(text));
+            const escapedQuery = escapeHtml(String(query)).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            try {
+                const regex = new RegExp(`(${escapedQuery})`, 'gi');
+                return escapedText.replace(regex, '<mark class="search-highlight">$1</mark>');
+            } catch(e) {
+                return escapedText;
             }
         }
 
         function handleGlobalSearch(query) {
-            const resultsEl = document.getElementById('searchResults');
+            const resultsEl = document.getElementById('searchResults') || document.getElementById('globalSearchResults');
+            const clearBtn = document.getElementById('globalSearchClearBtn');
+            const countEl = document.getElementById('searchMatchCount');
             if (!resultsEl) return;
+
             const q = (query || '').toLowerCase().trim();
+            if (clearBtn) {
+                clearBtn.style.display = q ? 'block' : 'none';
+            }
 
             if (!q) {
-                resultsEl.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 13.5px;">Type a keyword to search across all tasks, events, family members, meals, recipes, bills and notes...</div>`;
+                selectedSearchIndex = -1;
+                if (countEl) countEl.textContent = '';
+                resultsEl.innerHTML = `
+                    <div style="padding: 24px 10px; text-align: center;">
+                        <div style="width: 48px; height: 48px; border-radius: 14px; background: var(--bg-subtle); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; border: 1px solid var(--border-color);">
+                            <svg class="icon" style="width: 24px; height: 24px;"><use href="#icon-search"></use></svg>
+                        </div>
+                        <div style="font-weight: 700; font-size: 15px; color: var(--text-main); margin-bottom: 6px;">Global Instant Search</div>
+                        <p style="font-size: 13px; color: var(--text-muted); max-width: 440px; margin: 0 auto 20px auto; line-height: 1.5;">
+                            Search seamlessly across tasks, calendar, family, recipes, budget, notes, documents, and organizer pages.
+                        </p>
+                        <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 10px;">Quick Jump & Filters</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; max-width: 580px; margin: 0 auto;">
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Task')"><svg class="icon icon-sm"><use href="#icon-check-square"></use></svg> Tasks</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Calendar')"><svg class="icon icon-sm"><use href="#icon-calendar"></use></svg> Calendar</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Meal')"><svg class="icon icon-sm"><use href="#icon-utensils"></use></svg> Meals & Recipes</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Budget')"><svg class="icon icon-sm"><use href="#icon-wallet"></use></svg> Budget & Bills</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Kids')"><svg class="icon icon-sm"><use href="#icon-smile"></use></svg> Kids Tracker</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Family')"><svg class="icon icon-sm"><use href="#icon-users"></use></svg> Family Hub</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Notes')"><svg class="icon icon-sm"><use href="#icon-file-text"></use></svg> Notes & Lists</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Settings')"><svg class="icon icon-sm"><use href="#icon-settings"></use></svg> Settings & Backup</button>
+                            <button class="search-chip" type="button" onclick="quickFilterSearch('Developer')"><svg class="icon icon-sm"><use href="#icon-user"></use></svg> About Developer</button>
+                        </div>
+                    </div>
+                `;
                 return;
             }
 
             const matches = [];
 
-            // Search tasks
+            // 1. Search App Pages & Navigation Jump
+            SEARCHABLE_PAGES.forEach(p => {
+                if (p.title.toLowerCase().includes(q) || p.subtitle.toLowerCase().includes(q) || p.keywords.toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Page',
+                        icon: p.icon,
+                        view: p.view,
+                        title: p.title,
+                        subtitle: p.subtitle,
+                        badgeColor: 'var(--primary)'
+                    });
+                }
+            });
+
+            // 2. Search Tasks
             (appData.tasks || []).forEach(t => {
-                if ((t.title || '').toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Task', view: 'tasks', id: t.id, title: t.title, subtitle: `Due: ${formatDate(t.dueDate)} • ${t.category}` });
+                if ((t.title || '').toLowerCase().includes(q) || (t.notes || '').toLowerCase().includes(q) || (t.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Task',
+                        icon: 'icon-check-square',
+                        view: 'tasks',
+                        title: t.title,
+                        subtitle: `Due: ${formatDate(t.dueDate) || 'No date'} • ${t.category || 'General'} • ${t.status || 'Pending'}`,
+                        badgeColor: 'var(--color-urgent, #EF4444)'
+                    });
                 }
             });
 
-            // Search events
+            // 3. Search Events
             (appData.events || []).forEach(e => {
-                if ((e.title || '').toLowerCase().includes(q) || (e.location || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Event', view: 'calendar', id: e.id, title: e.title, subtitle: `${formatDate(e.date)} at ${e.time || ''} • ${e.member}` });
+                if ((e.title || '').toLowerCase().includes(q) || (e.location || '').toLowerCase().includes(q) || (e.member || '').toLowerCase().includes(q) || (e.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Event',
+                        icon: 'icon-calendar',
+                        view: 'calendar',
+                        title: e.title,
+                        subtitle: `${formatDate(e.date)} ${e.time ? 'at ' + e.time : ''} • ${e.member || 'Family'} • ${e.location || 'Home'}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
                 }
             });
 
-            // Search appointments
+            // 4. Search Appointments
             (appData.appointments || []).forEach(a => {
-                if ((a.title || '').toLowerCase().includes(q) || (a.person || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Appointment', view: 'appointments', id: a.id, title: a.title, subtitle: `${a.person} • ${formatDate(a.date)}` });
+                if ((a.title || '').toLowerCase().includes(q) || (a.person || '').toLowerCase().includes(q) || (a.location || '').toLowerCase().includes(q) || (a.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Appointment',
+                        icon: 'icon-clock',
+                        view: 'appointments',
+                        title: a.title,
+                        subtitle: `${a.person || 'Family'} • ${formatDate(a.date)} ${a.time ? 'at ' + a.time : ''} • ${a.location || ''}`,
+                        badgeColor: 'var(--color-urgent, #EF4444)'
+                    });
                 }
             });
 
-            // Search recipes
+            // 5. Search Family Members
+            (appData.family || []).forEach(f => {
+                if ((f.name || '').toLowerCase().includes(q) || (f.role || '').toLowerCase().includes(q) || (f.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Family',
+                        icon: 'icon-users',
+                        view: 'family-hub',
+                        title: f.name,
+                        subtitle: `${f.role || 'Family Member'} • ${f.notes || 'Profile'}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            // 6. Search Kids
+            (appData.kids || []).forEach(k => {
+                if ((k.name || '').toLowerCase().includes(q) || (k.grade || '').toLowerCase().includes(q) || (k.school || '').toLowerCase().includes(q) || (k.notes || '').toLowerCase().includes(q) || (k.allergies || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Kid',
+                        icon: 'icon-smile',
+                        view: 'kids',
+                        title: k.name,
+                        subtitle: `${k.grade || ''} • ${k.school || 'School'} • ${k.notes || ''}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            // 7. Search Recipes
             (appData.recipes || []).forEach(r => {
-                if ((r.name || '').toLowerCase().includes(q) || (r.ingredients || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Recipe', view: 'recipes', id: r.id, title: r.name, subtitle: `${r.category} • Prep: ${r.prepTime}` });
+                if ((r.name || '').toLowerCase().includes(q) || (r.ingredients || '').toLowerCase().includes(q) || (r.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Recipe',
+                        icon: 'icon-utensils',
+                        view: 'recipes',
+                        title: r.name,
+                        subtitle: `${r.category || 'Recipe'} • Prep: ${r.prepTime || 'N/A'} • Servings: ${r.servings || 'Family'}`,
+                        badgeColor: 'var(--color-meals, #F59E0B)'
+                    });
                 }
             });
 
-            // Search groceries
+            // 8. Search Groceries
             (appData.groceries || []).forEach(g => {
-                if ((g.item || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Grocery', view: 'grocery', id: g.id, title: g.item, subtitle: `${g.category} • ${g.quantity}` });
+                if ((g.item || '').toLowerCase().includes(q) || (g.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Grocery',
+                        icon: 'icon-shopping-cart',
+                        view: 'grocery',
+                        title: g.item,
+                        subtitle: `${g.category || 'Grocery'} • Qty: ${g.quantity || '1'}`,
+                        badgeColor: 'var(--color-meals, #F59E0B)'
+                    });
                 }
             });
 
-            // Search bills
+            // 9. Search Pantry
+            (appData.pantry || []).forEach(p => {
+                if ((p.item || '').toLowerCase().includes(q) || (p.category || '').toLowerCase().includes(q) || (p.location || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Pantry',
+                        icon: 'icon-box',
+                        view: 'pantry',
+                        title: p.item,
+                        subtitle: `${p.category || 'Pantry'} • Stored: ${p.location || 'Kitchen'} • Qty: ${p.quantity || 1}`,
+                        badgeColor: 'var(--color-meals, #F59E0B)'
+                    });
+                }
+            });
+
+            // 10. Search Bills
             (appData.bills || []).forEach(b => {
-                if ((b.name || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Bill', view: 'bills', id: b.id, title: b.name, subtitle: `${formatCurrency(b.amount)} • Due: ${formatDate(b.dueDate)}` });
+                if ((b.name || '').toLowerCase().includes(q) || (b.category || '').toLowerCase().includes(q) || (b.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Bill',
+                        icon: 'icon-receipt',
+                        view: 'bills',
+                        title: b.name,
+                        subtitle: `${formatCurrency(b.amount)} • Due: ${formatDate(b.dueDate)} • ${b.status || 'Pending'}`,
+                        badgeColor: 'var(--color-finances, #10B981)'
+                    });
                 }
             });
 
-            // Search contacts
+            // 11. Search Expenses
+            (appData.expenses || []).forEach(e => {
+                if ((e.description || '').toLowerCase().includes(q) || (e.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Expense',
+                        icon: 'icon-credit-card',
+                        view: 'expenses',
+                        title: e.description,
+                        subtitle: `${formatCurrency(e.amount)} • ${formatDate(e.date)} • ${e.category || 'Expense'}`,
+                        badgeColor: 'var(--color-finances, #10B981)'
+                    });
+                }
+            });
+
+            // 12. Search Subscriptions
+            (appData.subscriptions || []).forEach(s => {
+                if ((s.name || '').toLowerCase().includes(q) || (s.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Subscription',
+                        icon: 'icon-credit-card',
+                        view: 'subscriptions',
+                        title: s.name,
+                        subtitle: `${formatCurrency(s.cost)}/${s.frequency || 'mo'} • Renews: ${formatDate(s.renewalDate)}`,
+                        badgeColor: 'var(--color-finances, #10B981)'
+                    });
+                }
+            });
+
+            // 13. Search Savings Goals
+            (appData.savings || []).forEach(s => {
+                if ((s.name || '').toLowerCase().includes(q) || (s.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Savings',
+                        icon: 'icon-piggy-bank',
+                        view: 'savings',
+                        title: s.name,
+                        subtitle: `Target: ${formatCurrency(s.target)} • Current: ${formatCurrency(s.current)}`,
+                        badgeColor: 'var(--color-finances, #10B981)'
+                    });
+                }
+            });
+
+            // 14. Search Habits
+            (appData.habits || []).forEach(h => {
+                if ((h.name || '').toLowerCase().includes(q) || (h.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Habit',
+                        icon: 'icon-target',
+                        view: 'habits',
+                        title: h.name,
+                        subtitle: `${h.frequency || 'Daily'} • ${h.category || 'Habit'}`,
+                        badgeColor: 'var(--primary)'
+                    });
+                }
+            });
+
+            // 15. Search Goals
+            (appData.goals || []).forEach(g => {
+                if ((g.title || '').toLowerCase().includes(q) || (g.category || '').toLowerCase().includes(q) || (g.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Goal',
+                        icon: 'icon-star',
+                        view: 'goals',
+                        title: g.title,
+                        subtitle: `${g.category || 'Goal'} • Target: ${g.timeframe || 'Active'}`,
+                        badgeColor: 'var(--primary)'
+                    });
+                }
+            });
+
+            // 16. Search Cleaning Tasks
+            (appData.cleaning || []).forEach(c => {
+                if ((c.task || '').toLowerCase().includes(q) || (c.zone || '').toLowerCase().includes(q) || (c.frequency || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Cleaning',
+                        icon: 'icon-sparkles',
+                        view: 'cleaning',
+                        title: c.task,
+                        subtitle: `Zone: ${c.zone || 'Home'} • ${c.frequency || 'Regular'}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            // 17. Search Chores
+            (appData.chores || []).forEach(c => {
+                if ((c.chore || '').toLowerCase().includes(q) || (c.assignedTo || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Chore',
+                        icon: 'icon-check',
+                        view: 'chores',
+                        title: c.chore,
+                        subtitle: `Assigned: ${c.assignedTo || 'Family'} • ${c.frequency || 'Regular'}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            // 18. Search Maintenance
+            (appData.maintenance || []).forEach(m => {
+                if ((m.item || '').toLowerCase().includes(q) || (m.area || '').toLowerCase().includes(q) || (m.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Maintenance',
+                        icon: 'icon-wrench',
+                        view: 'maintenance',
+                        title: m.item,
+                        subtitle: `Area: ${m.area || 'Home'} • ${m.frequency || 'Periodic'}`,
+                        badgeColor: 'var(--color-urgent, #EF4444)'
+                    });
+                }
+            });
+
+            // 19. Search Inventory
+            (appData.inventory || []).forEach(i => {
+                if ((i.item || '').toLowerCase().includes(q) || (i.location || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Inventory',
+                        icon: 'icon-box',
+                        view: 'inventory',
+                        title: i.item,
+                        subtitle: `Location: ${i.location || 'Home'} • Qty: ${i.quantity || 1}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            // 20. Search Documents
+            (appData.documents || []).forEach(d => {
+                if ((d.title || '').toLowerCase().includes(q) || (d.category || '').toLowerCase().includes(q) || (d.location || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Document',
+                        icon: 'icon-file-text',
+                        view: 'documents',
+                        title: d.title,
+                        subtitle: `${d.category || 'Document'} • Stored: ${d.location || 'Vault'}`,
+                        badgeColor: 'var(--primary)'
+                    });
+                }
+            });
+
+            // 21. Search Emergency
+            (appData.emergency || []).forEach(em => {
+                if ((em.service || '').toLowerCase().includes(q) || (em.name || '').toLowerCase().includes(q) || (em.phone || '').includes(q) || (em.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Emergency',
+                        icon: 'icon-alert-triangle',
+                        view: 'emergency',
+                        title: em.service || em.name,
+                        subtitle: `Contact: ${em.name || ''} • Tel: ${em.phone || ''}`,
+                        badgeColor: 'var(--color-urgent, #EF4444)'
+                    });
+                }
+            });
+
+            // 22. Search Contacts
             (appData.contacts || []).forEach(c => {
-                if ((c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q)) {
-                    matches.push({ type: 'Contact', view: 'contacts', id: c.id, title: c.name, subtitle: `${c.relationship} • ${c.phone || ''}` });
+                if ((c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q) || (c.email || '').toLowerCase().includes(q) || (c.relationship || '').toLowerCase().includes(q) || (c.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Contact',
+                        icon: 'icon-phone-call',
+                        view: 'contacts',
+                        title: c.name,
+                        subtitle: `${c.relationship || 'Contact'} • ${c.phone || c.email || ''}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
                 }
             });
 
-            // Search notes
+            // 23. Search Notes
             (appData.notes || []).forEach(n => {
-                if ((n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q)) {
-                    matches.push({ type: 'Note', view: 'notes', id: n.id, title: n.title, subtitle: `${n.category} • ${n.content ? n.content.substring(0, 40) + '...' : ''}` });
+                if ((n.title || '').toLowerCase().includes(q) || (n.content || '').toLowerCase().includes(q) || (n.category || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Note',
+                        icon: 'icon-file-text',
+                        view: 'notes',
+                        title: n.title,
+                        subtitle: `${n.category || 'Note'} • ${n.content ? n.content.substring(0, 50) + '...' : ''}`,
+                        badgeColor: 'var(--primary)'
+                    });
                 }
             });
+
+            // 24. Search Birthdays
+            (appData.birthdays || []).forEach(b => {
+                if ((b.name || '').toLowerCase().includes(q) || (b.relationship || '').toLowerCase().includes(q) || (b.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'Birthday',
+                        icon: 'icon-gift',
+                        view: 'birthdays',
+                        title: b.name,
+                        subtitle: `${formatDate(b.date)} • ${b.relationship || 'Birthday'}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            // 25. Search School Items
+            (appData.schoolItems || []).forEach(s => {
+                if ((s.title || '').toLowerCase().includes(q) || (s.kid || '').toLowerCase().includes(q) || (s.school || '').toLowerCase().includes(q) || (s.notes || '').toLowerCase().includes(q)) {
+                    matches.push({
+                        type: 'School',
+                        icon: 'icon-book-open',
+                        view: 'school',
+                        title: s.title,
+                        subtitle: `${s.kid || ''} • ${s.school || 'School'} • ${formatDate(s.date)}`,
+                        badgeColor: 'var(--color-family, #8B5CF6)'
+                    });
+                }
+            });
+
+            selectedSearchIndex = -1;
+            if (countEl) {
+                countEl.textContent = `${matches.length} result${matches.length === 1 ? '' : 's'}`;
+            }
 
             if (matches.length === 0) {
-                resultsEl.innerHTML = `<div style="padding: 30px; text-align: center; color: var(--text-muted); font-size: 13.5px;">No matches found for "${escapeHtml(q)}".</div>`;
+                resultsEl.innerHTML = `
+                    <div style="padding: 40px 20px; text-align: center;">
+                        <div style="width: 44px; height: 44px; border-radius: 12px; background: var(--bg-subtle); color: var(--text-muted); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; border: 1px solid var(--border-color);">
+                            <svg class="icon"><use href="#icon-search"></use></svg>
+                        </div>
+                        <div style="font-weight: 700; font-size: 14px; color: var(--text-main); margin-bottom: 4px;">No results found</div>
+                        <div style="font-size: 13px; color: var(--text-muted);">No items matching "${escapeHtml(q)}". Try searching for tasks, family, recipes, or a page name.</div>
+                    </div>
+                `;
                 return;
             }
 
-            resultsEl.innerHTML = matches.map(m => `
-        <div onclick="navigateTo('${m.view}'); closeModal('modalSearch');" style="padding: 10px 14px; background: var(--bg-subtle); border-radius: 8px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-          <div>
-            <div style="font-weight: 700; font-size: 14px; color: var(--text-main);">${escapeHtml(m.title)}</div>
-            <div style="font-size: 12px; color: var(--text-muted);">${escapeHtml(m.subtitle)}</div>
-          </div>
-          <span class="badge" style="background: var(--bg-surface); color: var(--primary); font-weight: 700;">${m.type}</span>
-        </div>
-      `).join('');
+            resultsEl.innerHTML = matches.map((m, idx) => `
+                <div class="search-item" onclick="navigateTo('${m.view}'); closeModal('modalSearch');" data-index="${idx}" tabindex="0">
+                    <div class="search-item-left">
+                        <div class="search-item-icon">
+                            <svg class="icon icon-sm"><use href="#${m.icon || 'icon-search'}"></use></svg>
+                        </div>
+                        <div class="search-item-text">
+                            <div class="search-item-title">${highlightMatch(m.title, q)}</div>
+                            <div class="search-item-subtitle">${highlightMatch(m.subtitle, q)}</div>
+                        </div>
+                    </div>
+                    <span class="badge" style="background: var(--bg-surface); color: ${m.badgeColor || 'var(--primary)'}; font-weight: 700; font-size: 11px; margin-left: 10px; border: 1px solid var(--border-color);">${m.type}</span>
+                </div>
+            `).join('');
         }
 
         // ==========================================================================
