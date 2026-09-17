@@ -2110,14 +2110,17 @@
             }
 
             /* Calendar Grid Responsiveness */
-            .calendar-scroll-wrapper,
-            .card:has(div[style*="repeat(7, 1fr)"]) {
+            .calendar-scroll-wrapper {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch;
             }
 
-            div:has(> div[style*="repeat(7, 1fr)"]) {
-                min-width: 580px;
+            .cal-container,
+            .cal-card,
+            .cal-grid {
+                width: 100% !important;
+                min-width: 0 !important;
+                max-width: 100% !important;
             }
 
             /* Bottom Sheet Modals on Tablet/Mobile */
@@ -3321,6 +3324,675 @@
             
             .about-dev-action-btn {
                 padding: 14px 12px;
+            }
+        }
+
+        /* ==========================================================================
+           INTERACTIVE CALENDAR MODULE (Fully Responsive: Desktop, Tablet & Mobile)
+           ========================================================================== */
+        .cal-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        /* Header & Controls Toolbar */
+        .cal-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 4px;
+        }
+
+        .cal-title-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .cal-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cal-month-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+            margin: 0;
+        }
+
+        .cal-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .cal-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cal-nav-group {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 3px;
+            gap: 2px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cal-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            padding: 0 8px;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 700;
+            transition: all var(--transition-fast);
+        }
+
+        .cal-nav-btn:hover {
+            background: var(--bg-subtle);
+            color: var(--text-main);
+        }
+
+        .cal-nav-btn.today-btn {
+            padding: 0 10px;
+            font-size: 12px;
+        }
+
+        .cal-view-switch {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 3px;
+            gap: 2px;
+        }
+
+        .cal-view-btn {
+            padding: 5px 12px;
+            font-size: 12px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all var(--transition-fast);
+        }
+
+        .cal-view-btn.active {
+            background: var(--bg-surface);
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .cal-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Calendar Card & Grid */
+        .cal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            padding: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 11.5px;
+            font-weight: 800;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cal-weekdays .cal-weekend {
+            color: var(--primary);
+            opacity: 0.85;
+        }
+
+        .cal-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+            padding-top: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* Day Cell */
+        .cal-cell {
+            min-height: 105px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 7px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        .cal-cell:hover {
+            border-color: var(--primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .cal-cell.is-other-month {
+            background: var(--bg-subtle);
+            opacity: 0.45;
+        }
+
+        .cal-cell.is-today {
+            background: var(--color-family-soft);
+            border: 1.5px solid var(--color-family);
+        }
+
+        .cal-cell.is-selected {
+            outline: 2px solid var(--primary);
+            outline-offset: -1px;
+            box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+        }
+
+        /* Cell Header */
+        .cal-cell-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            line-height: 1;
+        }
+
+        .cal-day-number {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            transition: all var(--transition-fast);
+        }
+
+        .cal-cell.is-today .cal-day-number {
+            background: var(--primary);
+            color: #FFFFFF;
+            box-shadow: 0 2px 6px rgba(236, 72, 153, 0.35);
+        }
+
+        .cal-cell-actions {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .cal-cell:hover .cal-cell-actions {
+            opacity: 1;
+        }
+
+        .cal-cell-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 11px;
+            padding: 2px 4px;
+            border-radius: 3px;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .cal-cell-action-btn:hover {
+            background: var(--bg-subtle);
+            color: var(--primary);
+        }
+
+        /* Desktop Event Pills */
+        .cal-pills-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        .cal-pill {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 5px;
+            border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            line-height: 1.3;
+            cursor: pointer;
+            transition: opacity var(--transition-fast), transform var(--transition-fast);
+        }
+
+        .cal-pill:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .cal-pill-timeblock {
+            background: var(--color-today);
+            color: #FFFFFF;
+        }
+
+        .cal-pill-event {
+            background: var(--color-family);
+            color: #FFFFFF;
+        }
+
+        .cal-pill-appt {
+            background: var(--color-urgent);
+            color: #FFFFFF;
+        }
+
+        .cal-pill-task {
+            background: var(--color-school);
+            color: #FFFFFF;
+        }
+
+        .cal-pill-birthday {
+            background: #EC4899;
+            color: #FFFFFF;
+        }
+
+        .cal-pill-more {
+            font-size: 9.5px;
+            font-weight: 800;
+            color: var(--text-muted);
+            padding: 1px 4px;
+            border-radius: 3px;
+            background: var(--bg-subtle);
+            text-align: center;
+            margin-top: 1px;
+        }
+
+        /* Mobile Dots Indicator (Hidden on desktop, shown on mobile) */
+        .cal-dots-container {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            margin-top: 2px;
+            min-height: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cal-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .cal-dot-event { background: var(--color-family); }
+        .cal-dot-appt { background: var(--color-urgent); }
+        .cal-dot-task { background: var(--color-school); }
+        .cal-dot-timeblock { background: var(--color-today); }
+        .cal-dot-birthday { background: #EC4899; }
+
+        .cal-dot-count {
+            font-size: 8px;
+            font-weight: 800;
+            color: var(--text-muted);
+            line-height: 1;
+        }
+
+        /* Selected Day Agenda Drawer / Panel */
+        .cal-day-agenda-card {
+            margin-top: 16px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            box-sizing: border-box;
+        }
+
+        .cal-agenda-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .cal-agenda-date-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cal-agenda-date-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        .cal-agenda-actions-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .cal-agenda-items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .cal-agenda-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--primary);
+            border-radius: var(--border-radius-sm);
+            gap: 12px;
+            transition: all var(--transition-fast);
+        }
+
+        .cal-agenda-item:hover {
+            box-shadow: var(--shadow-sm);
+        }
+
+        .cal-agenda-item.type-event { border-left-color: var(--color-family); }
+        .cal-agenda-item.type-appt { border-left-color: var(--color-urgent); }
+        .cal-agenda-item.type-task { border-left-color: var(--color-school); }
+        .cal-agenda-item.type-timeblock { border-left-color: var(--color-today); }
+        .cal-agenda-item.type-birthday { border-left-color: #EC4899; }
+
+        .cal-agenda-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .cal-agenda-item-time {
+            font-size: 11.5px;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            background: var(--bg-subtle);
+            padding: 4px 8px;
+            border-radius: 4px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .cal-agenda-item-content {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .cal-agenda-item-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .cal-agenda-item-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 2px;
+            flex-wrap: wrap;
+        }
+
+        .cal-agenda-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        /* Agenda View (List Mode) */
+        .cal-agenda-view-container {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            width: 100%;
+        }
+
+        .cal-agenda-filter-bar {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding-bottom: 4px;
+        }
+
+        .cal-agenda-group {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .cal-agenda-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            background: var(--bg-subtle);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 800;
+            font-size: 13.5px;
+            color: var(--text-main);
+        }
+
+        .cal-agenda-group-body {
+            padding: 12px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Responsive Breakpoint for Calendar (<= 768px) */
+        @media (max-width: 768px) {
+            .cal-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .cal-title-row {
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .cal-month-title {
+                font-size: 18px;
+            }
+
+            .cal-controls-row {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .cal-actions {
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+
+            .cal-actions .btn {
+                width: 100%;
+                justify-content: center;
+                font-size: 11.5px;
+                padding: 7px 4px;
+            }
+
+            .cal-card {
+                padding: 10px 6px;
+                border-radius: var(--border-radius-sm);
+            }
+
+            .cal-weekdays {
+                font-size: 10px;
+                padding-bottom: 8px;
+            }
+
+            .cal-grid {
+                gap: 3px;
+                padding-top: 6px;
+            }
+
+            /* Mobile Day Cell: square & compact, dot indicators */
+            .cal-cell {
+                min-height: 52px;
+                height: auto;
+                padding: 4px 2px;
+                align-items: center;
+                justify-content: flex-start;
+                border-radius: 5px;
+                gap: 2px;
+            }
+
+            .cal-cell-header {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .cal-day-number {
+                font-size: 12px;
+                width: 22px;
+                height: 22px;
+            }
+
+            .cal-cell-actions {
+                display: none !important;
+            }
+
+            /* Hide text event pills on mobile */
+            .cal-pills-list {
+                display: none !important;
+            }
+
+            /* Show dot indicators on mobile */
+            .cal-dots-container {
+                display: flex !important;
+            }
+
+            /* Day Agenda Card on mobile */
+            .cal-day-agenda-card {
+                padding: 14px 12px;
+                margin-top: 12px;
+            }
+
+            .cal-agenda-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .cal-agenda-actions-bar {
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+
+            .cal-agenda-actions-bar .btn {
+                width: 100%;
+                justify-content: center;
+                padding: 6px 8px;
+                font-size: 11px;
+            }
+
+            .cal-agenda-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 12px;
+                gap: 8px;
+            }
+
+            .cal-agenda-item-left {
+                width: 100%;
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+            }
+
+            .cal-agenda-item-actions {
+                width: 100%;
+                justify-content: flex-end;
+                border-top: 1px dashed var(--border-color);
+                padding-top: 6px;
+            }
+
+            .cal-agenda-group-header {
+                padding: 10px 14px;
+                font-size: 12.5px;
+            }
+
+            .cal-agenda-group-body {
+                padding: 10px 12px;
             }
         }
     </style>
@@ -4683,11 +5355,11 @@
                     { id: uid(), name: 'Trash & Recycling Quarterly', category: 'Utilities', amount: 84.00, dueDate: past2Days, paid: true, paymentDate: past2Days, recurring: 'Quarterly', notes: 'Paid online' }
                 ],
                 subscriptions: [
-                    { id: uid(), service: 'Netflix 4K Family', category: 'Entertainment', cost: 22.99, frequency: 'Monthly', nextBilling: in7Days, active: true, notes: '4 screens simultaneous' },
-                    { id: uid(), service: 'Spotify Family Premium', category: 'Entertainment', cost: 16.99, frequency: 'Monthly', nextBilling: in3Days, active: true, notes: 'Includes Sarah, David & Emma' },
-                    { id: uid(), service: 'Costco Executive Membership', category: 'Shopping', cost: 120.00, frequency: 'Yearly', nextBilling: '2026-11-15', active: true, notes: 'Annual renewal with 2% reward' },
-                    { id: uid(), service: 'Amazon Prime', category: 'Shopping', cost: 139.00, frequency: 'Yearly', nextBilling: '2027-01-20', active: true, notes: 'Free 2-day delivery & Prime Video' },
-                    { id: uid(), service: 'Headspace Family Wellness', category: 'Personal', cost: 12.99, frequency: 'Monthly', nextBilling: '2026-09-25', active: true, notes: 'Bedtime stories for kids' }
+                    { id: uid(), service: 'Netflix 4K Family', category: 'Subscriptions & Media', cost: 22.99, frequency: 'Monthly', nextBilling: in7Days, active: true, notes: '4 screens simultaneous' },
+                    { id: uid(), service: 'Spotify Family Premium', category: 'Subscriptions & Media', cost: 16.99, frequency: 'Monthly', nextBilling: in3Days, active: true, notes: 'Includes Sarah, David & Emma' },
+                    { id: uid(), service: 'Costco Executive Membership', category: 'Subscriptions & Media', cost: 120.00, frequency: 'Yearly', nextBilling: '2026-11-15', active: true, notes: 'Annual renewal with 2% reward' },
+                    { id: uid(), service: 'Amazon Prime', category: 'Subscriptions & Media', cost: 139.00, frequency: 'Yearly', nextBilling: '2027-01-20', active: true, notes: 'Free 2-day delivery & Prime Video' },
+                    { id: uid(), service: 'Headspace Family Wellness', category: 'Subscriptions & Media', cost: 12.99, frequency: 'Monthly', nextBilling: '2026-09-25', active: true, notes: 'Bedtime stories for kids' }
                 ],
                 savings: [
                     { id: uid(), name: 'Summer Family Trip to Hawaii', target: 5000, current: 3450, targetDate: '2027-06-15', notes: 'Flights & resort condo booking fund' },
@@ -4880,13 +5552,24 @@
                     appData.dailyTimeBlocks.forEach(b => {
                         if (!b.date) b.date = todayIso;
                     });
+                    // Ensure all 7 days in meal planner exist
+                    if (!appData.meals) appData.meals = {};
+                    const defaultMeals = getDemoData().meals;
+                    ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(d => {
+                        if (!appData.meals[d] || typeof appData.meals[d] !== 'object') {
+                            appData.meals[d] = { ...defaultMeals[d] };
+                        }
+                    });
                 } else {
                     appData = getDemoData();
                     saveData();
                 }
+                // Automatically sync subscriptions for current month on app startup
+                syncSubscriptionExpenses();
             } catch (err) {
                 console.error("Storage loading error:", err);
                 appData = getDemoData();
+                syncSubscriptionExpenses();
             }
         }
 
@@ -5214,6 +5897,7 @@
         function navigateTo(viewName) {
             if (!VIEW_TITLES[viewName]) viewName = 'dashboard';
             currentView = viewName;
+            try { history.replaceState(null, null, '#' + viewName); } catch (e) {}
 
             // Update sidebar nav active items
             document.querySelectorAll('.nav-item').forEach(item => {
@@ -5434,12 +6118,52 @@
       `;
         }
 
+        // Helper: Get meal plan for today or specified day of week
+        function getDayMealPlan(targetDayKey = null) {
+            const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+            const todayDate = new Date();
+            const dayKey = (targetDayKey || dayKeys[todayDate.getDay()]).toLowerCase();
+            const dayName = dayKey.charAt(0).toUpperCase() + dayKey.slice(1);
+
+            const defaultDayMeals = {
+                monday: { b: 'Blueberry Overnight Oats', l: 'Turkey & Avocado Wraps', d: 'Sheet Pan Lemon Herb Chicken & Veggies', s: 'Apple slices with peanut butter' },
+                tuesday: { b: 'Greek Yogurt & Granola Parfait', l: 'Chicken Salad Leftovers', d: 'Taco Tuesday (Ground Turkey, Fresh Salsa)', s: 'Carrot sticks & hummus' },
+                wednesday: { b: 'Scrambled Eggs with Spinach & Toast', l: 'Cheese Quesadilla & Veggie sticks', d: 'Creamy Sun-Dried Tomato Pasta with Grilled Shrimp', s: 'Mixed berry smoothie' },
+                thursday: { b: 'Whole Wheat Banana Pancakes', l: 'Soup & Sourdough Toast', d: 'Slow Cooker Beef Stew with Warm Rolls', s: 'Cheddar cheese cubes & crackers' },
+                friday: { b: 'Avocado Toast with Poached Egg', l: 'Pasta Leftovers', d: 'Homemade Margherita Pizza & Garden Salad', s: 'Stovetop popcorn' },
+                saturday: { b: 'Family Waffle Bar with Strawberries', l: 'Caprese Sandwiches', d: 'Grilled Salmon with Roasted Asparagus & Quinoa', s: 'Fruit kabobs' },
+                sunday: { b: 'French Toast Bake with Pecans', l: 'Grilled Cheese & Tomato Bisque', d: 'Sunday Pot Roast with Potatoes & Carrots', s: 'Dark chocolate & almonds' }
+            };
+
+            const storedDayMeals = (appData && appData.meals && appData.meals[dayKey]) || {};
+            const defaults = defaultDayMeals[dayKey] || defaultDayMeals.monday;
+
+            return {
+                dayKey,
+                dayName,
+                meals: {
+                    b: (storedDayMeals.b !== undefined && storedDayMeals.b !== null && storedDayMeals.b !== '') ? storedDayMeals.b : defaults.b,
+                    l: (storedDayMeals.l !== undefined && storedDayMeals.l !== null && storedDayMeals.l !== '') ? storedDayMeals.l : defaults.l,
+                    d: (storedDayMeals.d !== undefined && storedDayMeals.d !== null && storedDayMeals.d !== '') ? storedDayMeals.d : defaults.d,
+                    s: (storedDayMeals.s !== undefined && storedDayMeals.s !== null && storedDayMeals.s !== '') ? storedDayMeals.s : defaults.s
+                }
+            };
+        }
+
+        // Helper: Quick open meal modal for specific day and slot
+        function openMealSlotModal(dayKey = null, mealType = 'd') {
+            const plan = getDayMealPlan(dayKey);
+            const currentDish = (plan && plan.meals && plan.meals[mealType]) || '';
+            openEntityModal('meal', null, { day: plan.dayKey, mealType: mealType, dish: currentDish });
+        }
+
         // ==========================================================================
         // SCREEN 1: EXECUTIVE DASHBOARD
         // ==========================================================================
 
         function renderDashboardView(container) {
             const today = new Date().toISOString().split('T')[0];
+            const todayPlan = getDayMealPlan();
 
             // Calculations for KPI Cards
             const totalTasks = (appData.tasks || []).length;
@@ -5451,7 +6175,11 @@
             const upcomingEvents = (appData.events || []).filter(e => e.date >= today);
             const upcomingAppts = (appData.appointments || []).filter(a => a.date >= today);
 
-            const totalMonthlyExpenses = (appData.expenses || []).reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const curMonthStr = today.slice(0, 7);
+            const curMonthFinSummary = typeof getMonthlyFinancialSummary === 'function'
+                ? getMonthlyFinancialSummary(curMonthStr)
+                : { totalExpenses: 0, income: 6800, spentMap: {}, monthlySubs: 0, monthSubTotal: 0 };
+            const totalMonthlyExpenses = curMonthFinSummary.totalExpenses;
             const unpaidBills = (appData.bills || []).filter(b => !b.paid);
             const totalBillsDue = unpaidBills.reduce((sum, b) => sum + (parseFloat(b.amount) || 0), 0);
 
@@ -5479,26 +6207,21 @@
             });
             todaySchedule.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
 
-            // Category spending for Donut Chart
-            const categorySpendMap = {};
-            (appData.expenses || []).forEach(e => {
-                const cat = e.category || 'Other';
-                categorySpendMap[cat] = (categorySpendMap[cat] || 0) + (parseFloat(e.amount) || 0);
-            });
-            const categoryColors = {
-                'Groceries': 'var(--color-meals)',
-                'Housing': 'var(--color-family)',
-                'Kids': 'var(--color-kids)',
-                'Utilities': 'var(--color-finances)',
-                'Transportation': '#F59E0B',
-                'School': 'var(--color-school)',
-                'Other': '#94A3B8'
-            };
-            const spendingSlices = Object.keys(categorySpendMap).map(cat => ({
-                label: cat,
-                value: categorySpendMap[cat],
-                color: categoryColors[cat] || 'var(--primary)'
-            }));
+            // Category spending for Donut Chart (synchronized canonical categories including subscriptions)
+            const spendingSlices = [];
+            if (curMonthFinSummary && curMonthFinSummary.spentMap) {
+                CANONICAL_MONEY_CATEGORIES.forEach(cat => {
+                    const val = curMonthFinSummary.spentMap[cat] || 0;
+                    if (val > 0) {
+                        spendingSlices.push({
+                            label: cat,
+                            value: val,
+                            color: getCategoryColor(cat)
+                        });
+                    }
+                });
+                spendingSlices.sort((a, b) => b.value - a.value);
+            }
 
             container.innerHTML = `
         <!-- Quick Action Shortcuts Bar -->
@@ -5550,13 +6273,13 @@
             <div class="kpi-subtext">${upcomingAppts[0]?.title || 'No upcoming bookings'}</div>
           </div>
 
-          <div class="kpi-card" style="border-left: 4px solid var(--color-meals);">
+          <div class="kpi-card" style="border-left: 4px solid var(--color-meals); cursor: pointer;" onclick="navigateTo('financial-dashboard')" title="View Financial Overview">
             <div class="kpi-top">
               <span class="kpi-label">Monthly Spending</span>
               <div class="kpi-icon-wrapper" style="background: var(--color-meals-soft); color: var(--color-meals);"><svg class="icon"><use href="#icon-wallet"></use></svg></div>
             </div>
             <div class="kpi-value">${formatCurrency(totalMonthlyExpenses)}</div>
-            <div class="kpi-subtext">Budget: ${formatCurrency(appData.monthlyIncome || 6500)}</div>
+            <div class="kpi-subtext">Budget: ${formatCurrency(curMonthFinSummary.income || appData.monthlyIncome || 6800)} • Subs: ${formatCurrency(curMonthFinSummary.monthSubTotal || curMonthFinSummary.monthlySubs || 0)}</div>
           </div>
 
           <div class="kpi-card" style="border-left: 4px solid var(--color-urgent);">
@@ -5630,12 +6353,12 @@
               <div style="display: flex; align-items: center; gap: 10px;">
                 <svg class="icon" style="color: var(--color-meals);"><use href="#icon-utensils"></use></svg>
                 <div>
-                  <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-meals-text);">Tonight's Dinner</div>
-                  <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">${appData.meals?.monday?.d || 'Sheet Pan Lemon Herb Chicken & Veggies'}</div>
+                  <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--color-meals-text);">Tonight's Dinner (${todayPlan.dayName})</div>
+                  <div style="font-size: 13.5px; font-weight: 600; color: var(--text-main);">${escapeHtml(todayPlan.meals.d || 'Plan tonight\'s dinner...')}</div>
                 </div>
               </div>
               <div style="display: flex; gap: 6px;">
-                <button class="btn btn-secondary btn-sm" onclick="openEntityModal('meal')">Change Meal</button>
+                <button class="btn btn-secondary btn-sm" onclick="openMealSlotModal('${todayPlan.dayKey}', 'd')">Change Meal</button>
                 <button class="btn btn-ghost btn-sm" onclick="navigateTo('meal-planner')">Planner →</button>
               </div>
             </div>
@@ -5651,7 +6374,7 @@
                   <div class="card-icon" style="background: var(--color-finances-soft); color: var(--color-finances);"><svg class="icon"><use href="#icon-wallet"></use></svg></div>
                   <div>
                     <div class="card-title">Expense Breakdown</div>
-                    <div class="card-subtitle">Spending by category this month</div>
+                    <div class="card-subtitle">Spending by category this month (incl. subscriptions)</div>
                   </div>
                 </div>
                 <button class="btn btn-ghost btn-sm" onclick="navigateTo('financial-dashboard')">Details →</button>
@@ -5659,12 +6382,16 @@
 
               <div style="display: flex; align-items: center; justify-content: space-around; gap: 16px;">
                 <div>${createSvgDonut(spendingSlices, 140, 22)}</div>
-                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
-                  ${spendingSlices.slice(0, 4).map(s => `
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <span style="width: 10px; height: 10px; border-radius: 3px; background: ${s.color}; display: inline-block;"></span>
-                      <span style="color: var(--text-secondary);">${s.label}:</span>
-                      <span style="font-weight: 700; font-family: var(--font-mono);">${formatCurrency(s.value)}</span>
+                <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; flex: 1; max-width: 210px;">
+                  ${spendingSlices.length === 0 ? `
+                    <div style="color: var(--text-muted); font-size: 11.5px;">No spending logged yet this month.</div>
+                  ` : spendingSlices.slice(0, 5).map(s => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                      <div style="display: flex; align-items: center; gap: 6px; overflow: hidden; min-width: 0;">
+                        <span style="width: 10px; height: 10px; border-radius: 3px; background: ${s.color}; display: inline-block; flex-shrink: 0;"></span>
+                        <span style="color: var(--text-secondary); text-overflow: ellipsis; white-space: nowrap; overflow: hidden;">${escapeHtml(s.label)}</span>
+                      </div>
+                      <span style="font-weight: 700; font-family: var(--font-mono); flex-shrink: 0;">${formatCurrency(s.value)}</span>
                     </div>
                   `).join('')}
                 </div>
@@ -5754,6 +6481,7 @@
 
         function renderTodayView(container) {
             const today = new Date().toISOString().split('T')[0];
+            const todayPlan = getDayMealPlan();
             const tracker = (appData.dailyTrackers && appData.dailyTrackers[today]) || {
                 water: 6,
                 intention: '',
@@ -5964,16 +6692,46 @@
               <div class="card-header">
                 <div class="card-title-group">
                   <div class="card-icon" style="background: var(--color-meals-soft); color: var(--color-meals);"><svg class="icon"><use href="#icon-utensils"></use></svg></div>
-                  <div class="card-title">Today's Meals</div>
+                  <div>
+                    <div class="card-title">Today's Meals</div>
+                    <div class="card-subtitle" style="font-size: 12px; color: var(--text-muted);">${todayPlan.dayName} Meal Plan</div>
+                  </div>
                 </div>
-                <button class="btn btn-secondary btn-sm" onclick="openEntityModal('meal')">Change Meal</button>
+                <div style="display: flex; gap: 6px;">
+                  <button class="btn btn-secondary btn-sm" onclick="openMealSlotModal('${todayPlan.dayKey}', 'd')">Change Meal</button>
+                  <button class="btn btn-ghost btn-sm" onclick="navigateTo('meal-planner')">Planner →</button>
+                </div>
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
-                <div style="padding: 6px 10px; background: var(--bg-subtle); border-radius: 6px;"><strong>Breakfast:</strong> ${appData.meals?.monday?.b || 'Blueberry Overnight Oats'}</div>
-                <div style="padding: 6px 10px; background: var(--bg-subtle); border-radius: 6px;"><strong>Lunch:</strong> ${appData.meals?.monday?.l || 'Turkey & Avocado Wraps'}</div>
-                <div style="padding: 6px 10px; background: var(--bg-subtle); border-radius: 6px;"><strong>Dinner:</strong> ${appData.meals?.monday?.d || 'Sheet Pan Lemon Herb Chicken'}</div>
-                <div style="padding: 6px 10px; background: var(--bg-subtle); border-radius: 6px;"><strong>Snack:</strong> ${appData.meals?.monday?.s || 'Apple slices with peanut butter'}</div>
+                <div style="padding: 8px 12px; background: var(--bg-subtle); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--color-meals-text); margin-right: 6px;">Breakfast:</span>
+                    <span style="font-weight: 600; color: var(--text-main);">${escapeHtml(todayPlan.meals.b || 'Not planned yet')}</span>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openMealSlotModal('${todayPlan.dayKey}', 'b')" title="Edit Breakfast">✏️</button>
+                </div>
+                <div style="padding: 8px 12px; background: var(--bg-subtle); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--color-meals-text); margin-right: 6px;">Lunch:</span>
+                    <span style="font-weight: 600; color: var(--text-main);">${escapeHtml(todayPlan.meals.l || 'Not planned yet')}</span>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openMealSlotModal('${todayPlan.dayKey}', 'l')" title="Edit Lunch">✏️</button>
+                </div>
+                <div style="padding: 8px 12px; background: var(--bg-subtle); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--color-meals-text); margin-right: 6px;">Dinner:</span>
+                    <span style="font-weight: 600; color: var(--text-main);">${escapeHtml(todayPlan.meals.d || 'Not planned yet')}</span>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openMealSlotModal('${todayPlan.dayKey}', 'd')" title="Edit Dinner">✏️</button>
+                </div>
+                <div style="padding: 8px 12px; background: var(--bg-subtle); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span style="font-weight: 700; color: var(--color-meals-text); margin-right: 6px;">Snack:</span>
+                    <span style="font-weight: 600; color: var(--text-main);">${escapeHtml(todayPlan.meals.s || 'Not planned yet')}</span>
+                  </div>
+                  <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openMealSlotModal('${todayPlan.dayKey}', 's')" title="Edit Snack">✏️</button>
+                </div>
               </div>
             </div>
 
@@ -6537,78 +7295,587 @@
         }
 
         // ==========================================================================
-        // SCREEN 6: FULL INTERACTIVE CALENDAR
+        // SCREEN 6: FULL INTERACTIVE CALENDAR (RESPONSIVE MONTH & AGENDA VIEWS)
         // ==========================================================================
+
+        let calendarYear = new Date().getFullYear();
+        let calendarMonth = new Date().getMonth(); // 0 - 11
+        let calendarViewMode = 'month'; // 'month' | 'agenda'
+        let calendarSelectedDate = new Date().toISOString().split('T')[0];
+        let calendarAgendaFilter = 'all'; // 'all' | 'events' | 'appointments' | 'tasks' | 'timeblocks'
+
+        function changeCalendarMonth(delta) {
+            calendarMonth += delta;
+            if (calendarMonth < 0) {
+                calendarMonth = 11;
+                calendarYear--;
+            } else if (calendarMonth > 11) {
+                calendarMonth = 0;
+                calendarYear++;
+            }
+            const now = new Date();
+            if (calendarYear === now.getFullYear() && calendarMonth === now.getMonth()) {
+                calendarSelectedDate = now.toISOString().split('T')[0];
+            } else {
+                calendarSelectedDate = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-01`;
+            }
+            renderCurrentView();
+        }
+
+        function resetCalendarToToday() {
+            const now = new Date();
+            calendarYear = now.getFullYear();
+            calendarMonth = now.getMonth();
+            calendarSelectedDate = now.toISOString().split('T')[0];
+            renderCurrentView();
+        }
+
+        function setCalendarViewMode(mode) {
+            calendarViewMode = mode;
+            renderCurrentView();
+        }
+
+        function selectCalendarDate(dateStr) {
+            if (!dateStr) return;
+            calendarSelectedDate = dateStr;
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                const targetYear = parseInt(parts[0], 10);
+                const targetMonth = parseInt(parts[1], 10) - 1;
+                if (targetYear !== calendarYear || targetMonth !== calendarMonth) {
+                    calendarYear = targetYear;
+                    calendarMonth = targetMonth;
+                }
+            }
+            renderCurrentView();
+            if (window.innerWidth <= 768) {
+                setTimeout(() => {
+                    const agendaEl = document.getElementById('calSelectedDayAgenda');
+                    if (agendaEl) {
+                        agendaEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
+                }, 50);
+            }
+        }
+
+        function setCalendarAgendaFilter(filter) {
+            calendarAgendaFilter = filter;
+            renderCurrentView();
+        }
+
+        function getCalendarItemsForDate(dStr, todayStr) {
+            const items = [];
+
+            // Daily Time Blocks
+            (appData.dailyTimeBlocks || []).forEach(b => {
+                if (b.date === dStr || (!b.date && dStr === todayStr)) {
+                    items.push({
+                        id: b.id,
+                        entityType: 'timeblock',
+                        title: b.title || 'Schedule Block',
+                        time: b.time || '09:00 AM',
+                        subtitle: b.member || b.category || 'Routine',
+                        color: 'var(--color-today)',
+                        icon: 'clock'
+                    });
+                }
+            });
+
+            // Family Events
+            (appData.events || []).forEach(e => {
+                if (e.date === dStr) {
+                    items.push({
+                        id: e.id,
+                        entityType: 'event',
+                        title: e.title || 'Family Event',
+                        time: e.startTime || e.time || 'All Day',
+                        subtitle: `${e.member ? e.member : ''}${e.location ? (e.member ? ' • ' : '') + e.location : ''}`,
+                        color: 'var(--color-family)',
+                        icon: 'calendar'
+                    });
+                }
+            });
+
+            // Medical & Other Appointments
+            (appData.appointments || []).forEach(a => {
+                if (a.date === dStr) {
+                    items.push({
+                        id: a.id,
+                        entityType: 'appointment',
+                        title: a.title || 'Appointment',
+                        time: a.time || 'Scheduled',
+                        subtitle: `${a.provider || ''}${a.member ? (a.provider ? ' • ' : '') + a.member : ''}`,
+                        color: 'var(--color-urgent)',
+                        icon: 'bell'
+                    });
+                }
+            });
+
+            // Tasks
+            (appData.tasks || []).forEach(t => {
+                if (t.dueDate === dStr) {
+                    items.push({
+                        id: t.id,
+                        entityType: 'task',
+                        title: t.title || 'Task',
+                        time: t.dueTime || 'Due Today',
+                        subtitle: `${t.priority || 'Normal'}${t.category ? ' • ' + t.category : ''}`,
+                        status: t.status,
+                        color: 'var(--color-school)',
+                        icon: 'check-square'
+                    });
+                }
+            });
+
+            // Birthdays (recurring annual match MM-DD)
+            const monthDay = dStr.substring(5);
+            (appData.birthdays || []).forEach(b => {
+                if (b.date && b.date.endsWith(monthDay)) {
+                    items.push({
+                        id: b.id,
+                        entityType: 'birthday',
+                        title: `🎂 ${b.name}'s Birthday`,
+                        time: 'All Day',
+                        subtitle: `${b.relationship || 'Family'} • ${b.gift ? 'Gift: ' + b.gift : 'Celebration'}`,
+                        color: '#EC4899',
+                        icon: 'gift'
+                    });
+                }
+            });
+
+            // Chronological sort
+            items.sort((a, b) => {
+                const timeA = (a.time || '').toLowerCase();
+                const timeB = (b.time || '').toLowerCase();
+                if (timeA === 'all day' && timeB !== 'all day') return -1;
+                if (timeB === 'all day' && timeA !== 'all day') return 1;
+                return timeA.localeCompare(timeB);
+            });
+
+            return items;
+        }
+
+        function handleCalendarItemClick(entityType, id, dateStr) {
+            if (entityType === 'timeblock') {
+                if (id) openEntityModal('timeblock', id);
+                else openDailyPlannerForDate(dateStr);
+            } else if (entityType === 'event') {
+                openEntityModal('event', id);
+            } else if (entityType === 'appointment') {
+                openEntityModal('appointment', id);
+            } else if (entityType === 'task') {
+                openEntityModal('task', id);
+            } else if (entityType === 'birthday') {
+                navigateTo('birthdays');
+            }
+        }
+
+        function deleteCalendarItem(entityType, id, title) {
+            if (entityType === 'timeblock') {
+                deleteEntity('timeblock', id, title);
+            } else if (entityType === 'event') {
+                deleteEntity('event', id, title);
+            } else if (entityType === 'appointment') {
+                deleteEntity('appointment', id, title);
+            } else if (entityType === 'task') {
+                deleteEntity('task', id, title);
+            }
+        }
 
         function renderCalendarView(container) {
             const now = new Date();
-            const curYear = now.getFullYear();
-            const curMonth = now.getMonth();
-            const firstDay = new Date(curYear, curMonth, 1).getDay();
-            const totalDays = new Date(curYear, curMonth + 1, 0).getDate();
-            const todayDate = now.getDate();
+            const todayStr = now.toISOString().split('T')[0];
+            const tomorrow = new Date(now.getTime() + 86400000);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            const yesterday = new Date(now.getTime() - 86400000);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-            container.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
-          <div>
-            <h2 style="font-size: 20px; font-weight: 800; color: var(--text-main);">${now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</h2>
-            <div style="font-size: 13px; color: var(--text-muted);">Click any event to edit or click a date to add</div>
-          </div>
-          <div style="display: flex; gap: 8px;">
-            <button class="btn btn-primary btn-sm" onclick="openEntityModal('event')">+ Add Event</button>
-            <button class="btn btn-secondary btn-sm" onclick="openEntityModal('appointment')">+ Appointment</button>
-          </div>
-        </div>
+            const currentMonthDate = new Date(calendarYear, calendarMonth, 1);
+            const monthName = currentMonthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-        <div class="card" style="padding: 16px;">
-          <!-- Days of Week Header -->
-          <div style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-weight: 700; font-size: 12px; color: var(--text-muted); padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
-            <div>SUN</div><div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div>
-          </div>
+            const weekStart = (appData.settings && appData.settings.weekStart) ? appData.settings.weekStart : 'monday';
+            const isMondayStart = weekStart === 'monday';
 
-          <!-- Calendar Grid Days -->
-          <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding-top: 8px;">
-            ${Array.from({ length: firstDay }).map(() => `
-              <div style="min-height: 80px; background: var(--bg-subtle); opacity: 0.4; border-radius: 6px;"></div>
-            `).join('')}
-            ${Array.from({ length: totalDays }).map((_, i) => {
-                const dayNum = i + 1;
-                const isToday = dayNum === todayDate;
-                const dStr = `${curYear}-${String(curMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
-                const eventsThisDay = (appData.events || []).filter(e => e.date === dStr);
-                const apptsThisDay = (appData.appointments || []).filter(a => a.date === dStr);
-                const blocksThisDay = (appData.dailyTimeBlocks || []).filter(b => b.date === dStr || (!b.date && dStr === todayStr));
-                const tasksThisDay = (appData.tasks || []).filter(t => t.dueDate === dStr);
+            const weekDayLabels = isMondayStart
+                ? ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
+                : ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-                return `
-                <div style="min-height: 80px; background: ${isToday ? 'var(--color-family-soft)' : 'var(--bg-surface)'}; border: 1px solid ${isToday ? 'var(--color-family)' : 'var(--border-color)'}; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; gap: 4px;">
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-weight: 700; font-size: 12px; color: ${isToday ? 'var(--color-family-text)' : 'var(--text-main)'}; cursor: pointer;" onclick="openDailyPlannerForDate('${dStr}')" title="Open Daily Planner for this day">${dayNum}</span>
-                    <div style="display: flex; gap: 2px;">
-                      <button class="btn btn-ghost btn-sm" style="padding: 0 4px; font-size: 10px;" onclick="openEntityModal('timeblock', null, { date: '${dStr}' })" title="Add time block on this day">⏰</button>
-                      <button class="btn btn-ghost btn-sm" style="padding: 0 4px; font-size: 10px;" onclick="openEntityModal('event', null, { date: '${dStr}' })" title="Add event on this day">+</button>
+            const rawFirstDay = currentMonthDate.getDay(); // 0 = Sun
+            const firstDayOffset = isMondayStart ? ((rawFirstDay + 6) % 7) : rawFirstDay;
+            const totalDays = new Date(calendarYear, calendarMonth + 1, 0).getDate();
+            const prevMonthTotalDays = new Date(calendarYear, calendarMonth, 0).getDate();
+            const totalGridCells = firstDayOffset + totalDays;
+            const nextMonthPadding = (7 - (totalGridCells % 7)) % 7;
+
+            // Header Toolbar
+            const toolbarHtml = `
+              <div class="cal-toolbar">
+                <div class="cal-title-section">
+                  <div class="cal-title-row">
+                    <h2 class="cal-month-title">${monthName}</h2>
+                    <div class="cal-nav-group">
+                      <button class="cal-nav-btn" onclick="changeCalendarMonth(-1)" title="Previous Month" aria-label="Previous Month">
+                        <svg class="icon icon-sm"><use href="#icon-chevron-left"></use></svg>
+                      </button>
+                      <button class="cal-nav-btn today-btn" onclick="resetCalendarToToday()" title="Jump to Current Month">Today</button>
+                      <button class="cal-nav-btn" onclick="changeCalendarMonth(1)" title="Next Month" aria-label="Next Month">
+                        <svg class="icon icon-sm"><use href="#icon-chevron-right"></use></svg>
+                      </button>
                     </div>
                   </div>
-                  <div style="display: flex; flex-direction: column; gap: 2px; overflow: hidden;">
-                    ${blocksThisDay.map(b => `
-                      <div onclick="openDailyPlannerForDate('${dStr}')" style="font-size: 10px; font-weight: 600; padding: 2px 4px; background: var(--color-today); color: #FFFFFF; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="Schedule: ${escapeHtml(b.title)} (${b.time})">⏰ ${escapeHtml(b.title)}</div>
-                    `).join('')}
-                    ${eventsThisDay.map(e => `
-                      <div onclick="openEntityModal('event', '${e.id}')" style="font-size: 10px; font-weight: 600; padding: 2px 4px; background: var(--color-family); color: #FFFFFF; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="${escapeHtml(e.title)} • Click to edit">${escapeHtml(e.title)}</div>
-                    `).join('')}
-                    ${apptsThisDay.map(a => `
-                      <div onclick="openEntityModal('appointment', '${a.id}')" style="font-size: 10px; font-weight: 600; padding: 2px 4px; background: var(--color-urgent); color: #FFFFFF; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="${escapeHtml(a.title)} • Click to edit">${escapeHtml(a.title)}</div>
-                    `).join('')}
-                    ${tasksThisDay.map(t => `
-                      <div onclick="openEntityModal('task', '${t.id}')" style="font-size: 10px; font-weight: 600; padding: 2px 4px; background: var(--color-school); color: #FFFFFF; border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;" title="Task: ${escapeHtml(t.title)}">${escapeHtml(t.title)}</div>
-                    `).join('')}
+                  <div class="cal-subtitle">Interactive family schedule, medical, school & activities</div>
+                </div>
+
+                <div class="cal-controls-row">
+                  <!-- View Switcher (Month Grid vs Agenda Feed) -->
+                  <div class="cal-view-switch">
+                    <button class="cal-view-btn ${calendarViewMode === 'month' ? 'active' : ''}" onclick="setCalendarViewMode('month')">
+                      <svg class="icon icon-sm"><use href="#icon-calendar"></use></svg> Month
+                    </button>
+                    <button class="cal-view-btn ${calendarViewMode === 'agenda' ? 'active' : ''}" onclick="setCalendarViewMode('agenda')">
+                      <svg class="icon icon-sm"><use href="#icon-file-text"></use></svg> Agenda
+                    </button>
+                  </div>
+
+                  <!-- Quick Add Buttons -->
+                  <div class="cal-actions">
+                    <button class="btn btn-primary btn-sm" onclick="openEntityModal('event', null, { date: '${calendarSelectedDate}' })">+ Event</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openEntityModal('appointment', null, { date: '${calendarSelectedDate}' })">+ Appt</button>
+                    <button class="btn btn-secondary btn-sm" onclick="openEntityModal('task', null, { dueDate: '${calendarSelectedDate}' })">+ Task</button>
                   </div>
                 </div>
-              `;
-            }).join('')}
-          </div>
-        </div>
-      `;
+              </div>
+            `;
+
+            if (calendarViewMode === 'agenda') {
+                // RENDER AGENDA VIEW
+                container.innerHTML = `
+                  <div class="cal-container">
+                    ${toolbarHtml}
+                    ${renderCalendarAgendaView(calendarYear, calendarMonth, todayStr, tomorrowStr, yesterdayStr)}
+                  </div>
+                `;
+                return;
+            }
+
+            // RENDER MONTH GRID VIEW
+            let gridCellsHtml = '';
+
+            // Previous Month Padding Days
+            for (let i = 0; i < firstDayOffset; i++) {
+                const prevDayNum = prevMonthTotalDays - firstDayOffset + 1 + i;
+                const prevDate = new Date(calendarYear, calendarMonth - 1, prevDayNum);
+                const prevDStr = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}-${String(prevDayNum).padStart(2, '0')}`;
+                gridCellsHtml += `
+                  <div class="cal-cell is-other-month" onclick="selectCalendarDate('${prevDStr}')" title="${prevDStr}">
+                    <div class="cal-cell-header">
+                      <span class="cal-day-number" style="opacity: 0.5;">${prevDayNum}</span>
+                    </div>
+                  </div>
+                `;
+            }
+
+            // Current Month Days
+            for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
+                const dStr = `${calendarYear}-${String(calendarMonth + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                const isToday = dStr === todayStr;
+                const isSelected = dStr === calendarSelectedDate;
+                const dayItems = getCalendarItemsForDate(dStr, todayStr);
+
+                // Count categories for dots
+                const hasEvent = dayItems.some(item => item.entityType === 'event');
+                const hasAppt = dayItems.some(item => item.entityType === 'appointment');
+                const hasTask = dayItems.some(item => item.entityType === 'task');
+                const hasBlock = dayItems.some(item => item.entityType === 'timeblock');
+                const hasBday = dayItems.some(item => item.entityType === 'birthday');
+
+                let dotsHtml = '';
+                if (hasEvent) dotsHtml += '<span class="cal-dot cal-dot-event" title="Event"></span>';
+                if (hasAppt) dotsHtml += '<span class="cal-dot cal-dot-appt" title="Appointment"></span>';
+                if (hasTask) dotsHtml += '<span class="cal-dot cal-dot-task" title="Task"></span>';
+                if (hasBlock) dotsHtml += '<span class="cal-dot cal-dot-timeblock" title="Schedule"></span>';
+                if (hasBday) dotsHtml += '<span class="cal-dot cal-dot-birthday" title="Birthday"></span>';
+                if (dayItems.length > 5) {
+                    dotsHtml += `<span class="cal-dot-count">+${dayItems.length - 5}</span>`;
+                }
+
+                // Desktop Event Pills (up to 3)
+                const visiblePills = dayItems.slice(0, 3);
+                const remainingCount = dayItems.length - 3;
+                let pillsHtml = '';
+
+                visiblePills.forEach(item => {
+                    let pillClass = 'cal-pill-event';
+                    let iconLabel = '';
+                    if (item.entityType === 'timeblock') { pillClass = 'cal-pill-timeblock'; iconLabel = '⏰ '; }
+                    else if (item.entityType === 'appointment') { pillClass = 'cal-pill-appt'; iconLabel = '🔴 '; }
+                    else if (item.entityType === 'task') { pillClass = 'cal-pill-task'; iconLabel = '✓ '; }
+                    else if (item.entityType === 'birthday') { pillClass = 'cal-pill-birthday'; iconLabel = '🎂 '; }
+
+                    pillsHtml += `
+                      <div class="cal-pill ${pillClass}" onclick="event.stopPropagation(); handleCalendarItemClick('${item.entityType}', '${item.id}', '${dStr}')" title="${escapeHtml(item.title)} (${item.time})">
+                        <span>${iconLabel}${escapeHtml(item.title)}</span>
+                      </div>
+                    `;
+                });
+
+                if (remainingCount > 0) {
+                    pillsHtml += `<div class="cal-pill-more" onclick="event.stopPropagation(); selectCalendarDate('${dStr}')">+${remainingCount} more</div>`;
+                }
+
+                gridCellsHtml += `
+                  <div class="cal-cell ${isToday ? 'is-today' : ''} ${isSelected ? 'is-selected' : ''}" onclick="selectCalendarDate('${dStr}')" data-date="${dStr}">
+                    <div class="cal-cell-header">
+                      <span class="cal-day-number" title="${isToday ? 'Today' : ''}">${dayNum}</span>
+                      <div class="cal-cell-actions">
+                        <button class="cal-cell-action-btn" onclick="event.stopPropagation(); openDailyPlannerForDate('${dStr}')" title="Daily Schedule">⏰</button>
+                        <button class="cal-cell-action-btn" onclick="event.stopPropagation(); openEntityModal('event', null, { date: '${dStr}' })" title="Add Event">+</button>
+                      </div>
+                    </div>
+
+                    <!-- Mobile Dots -->
+                    <div class="cal-dots-container">
+                      ${dotsHtml}
+                    </div>
+
+                    <!-- Desktop Pills -->
+                    <div class="cal-pills-list">
+                      ${pillsHtml}
+                    </div>
+                  </div>
+                `;
+            }
+
+            // Next Month Padding Days
+            for (let i = 1; i <= nextMonthPadding; i++) {
+                const nextDate = new Date(calendarYear, calendarMonth + 1, i);
+                const nextDStr = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                gridCellsHtml += `
+                  <div class="cal-cell is-other-month" onclick="selectCalendarDate('${nextDStr}')" title="${nextDStr}">
+                    <div class="cal-cell-header">
+                      <span class="cal-day-number" style="opacity: 0.5;">${i}</span>
+                    </div>
+                  </div>
+                `;
+            }
+
+            // Weekday headers HTML
+            const weekdaysHtml = weekDayLabels.map((lbl, idx) => {
+                const isWeekend = isMondayStart ? (idx === 5 || idx === 6) : (idx === 0 || idx === 6);
+                return `<div class="${isWeekend ? 'cal-weekend' : ''}">${lbl}</div>`;
+            }).join('');
+
+            // Selected Day Agenda Panel HTML
+            const selectedDayItems = getCalendarItemsForDate(calendarSelectedDate, todayStr);
+            const selectedDateObj = new Date(calendarSelectedDate + 'T12:00:00');
+            const selectedDateTitle = selectedDateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+            let relativeBadge = '';
+            if (calendarSelectedDate === todayStr) {
+                relativeBadge = '<span class="badge badge-today">Today</span>';
+            } else if (calendarSelectedDate === tomorrowStr) {
+                relativeBadge = '<span class="badge badge-upcoming">Tomorrow</span>';
+            } else if (calendarSelectedDate === yesterdayStr) {
+                relativeBadge = '<span class="badge badge-subtle">Yesterday</span>';
+            }
+
+            let agendaItemsHtml = '';
+            if (selectedDayItems.length === 0) {
+                agendaItemsHtml = `
+                  <div style="text-align: center; padding: 28px 16px; color: var(--text-muted);">
+                    <div style="font-size: 28px; margin-bottom: 6px;">📅</div>
+                    <div style="font-weight: 700; font-size: 14px; color: var(--text-main);">No items scheduled for this day</div>
+                    <div style="font-size: 12px; margin-top: 4px; margin-bottom: 14px;">Add family events, appointments, tasks, or time blocks to stay organized.</div>
+                    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                      <button class="btn btn-primary btn-sm" onclick="openEntityModal('event', null, { date: '${calendarSelectedDate}' })">+ Add Event</button>
+                      <button class="btn btn-secondary btn-sm" onclick="openDailyPlannerForDate('${calendarSelectedDate}')">Open Daily Planner</button>
+                    </div>
+                  </div>
+                `;
+            } else {
+                agendaItemsHtml = selectedDayItems.map(item => {
+                    let typeBadgeClass = 'badge-subtle';
+                    let typeName = 'Event';
+                    if (item.entityType === 'timeblock') { typeBadgeClass = 'badge-today'; typeName = 'Schedule Block'; }
+                    else if (item.entityType === 'appointment') { typeBadgeClass = 'badge-urgent'; typeName = 'Appointment'; }
+                    else if (item.entityType === 'task') { typeBadgeClass = item.status === 'Completed' ? 'badge-completed' : 'badge-upcoming'; typeName = 'Task'; }
+                    else if (item.entityType === 'birthday') { typeBadgeClass = 'badge-high'; typeName = 'Birthday'; }
+
+                    return `
+                      <div class="cal-agenda-item type-${item.entityType}">
+                        <div class="cal-agenda-item-left">
+                          <span class="cal-agenda-item-time">${item.time}</span>
+                          <div class="cal-agenda-item-content">
+                            <div class="cal-agenda-item-title" style="${item.status === 'Completed' ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(item.title)}</div>
+                            <div class="cal-agenda-item-meta">
+                              <span class="badge ${typeBadgeClass}">${typeName}</span>
+                              ${item.subtitle ? `<span>${escapeHtml(item.subtitle)}</span>` : ''}
+                            </div>
+                          </div>
+                        </div>
+                        <div class="cal-agenda-item-actions">
+                          <button class="btn btn-ghost btn-sm" onclick="handleCalendarItemClick('${item.entityType}', '${item.id}', '${calendarSelectedDate}')" title="Edit"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
+                          ${item.entityType !== 'birthday' ? `
+                            <button class="btn btn-ghost btn-sm" style="color: var(--color-urgent);" onclick="deleteCalendarItem('${item.entityType}', '${item.id}', '${escapeHtml(item.title)}')" title="Delete"><svg class="icon icon-sm"><use href="#icon-trash-2"></use></svg></button>
+                          ` : ''}
+                        </div>
+                      </div>
+                    `;
+                }).join('');
+            }
+
+            container.innerHTML = `
+              <div class="cal-container">
+                ${toolbarHtml}
+
+                <!-- Calendar Card & Grid -->
+                <div class="cal-card">
+                  <div class="cal-weekdays">
+                    ${weekdaysHtml}
+                  </div>
+                  <div class="cal-grid">
+                    ${gridCellsHtml}
+                  </div>
+                </div>
+
+                <!-- Selected Day Agenda Card (Interactive Inspector) -->
+                <div id="calSelectedDayAgenda" class="cal-day-agenda-card">
+                  <div class="cal-agenda-header">
+                    <div class="cal-agenda-date-info">
+                      <span class="cal-agenda-date-title">${selectedDateTitle}</span>
+                      ${relativeBadge}
+                      <span class="badge badge-subtle">${selectedDayItems.length} scheduled</span>
+                    </div>
+                    <div class="cal-agenda-actions-bar">
+                      <button class="btn btn-primary btn-sm" onclick="openEntityModal('event', null, { date: '${calendarSelectedDate}' })">+ Event</button>
+                      <button class="btn btn-secondary btn-sm" onclick="openEntityModal('appointment', null, { date: '${calendarSelectedDate}' })">+ Appt</button>
+                      <button class="btn btn-secondary btn-sm" onclick="openEntityModal('task', null, { dueDate: '${calendarSelectedDate}' })">+ Task</button>
+                      <button class="btn btn-ghost btn-sm" onclick="openDailyPlannerForDate('${calendarSelectedDate}')" title="Open Daily Planner">📋 Planner</button>
+                    </div>
+                  </div>
+
+                  <div class="cal-agenda-items-list">
+                    ${agendaItemsHtml}
+                  </div>
+                </div>
+              </div>
+            `;
+        }
+
+        function renderCalendarAgendaView(year, month, todayStr, tomorrowStr, yesterdayStr) {
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const daysWithItems = [];
+
+            for (let dayNum = 1; dayNum <= totalDays; dayNum++) {
+                const dStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+                let items = getCalendarItemsForDate(dStr, todayStr);
+
+                if (calendarAgendaFilter !== 'all') {
+                    if (calendarAgendaFilter === 'events') items = items.filter(i => i.entityType === 'event' || i.entityType === 'birthday');
+                    else if (calendarAgendaFilter === 'appointments') items = items.filter(i => i.entityType === 'appointment');
+                    else if (calendarAgendaFilter === 'tasks') items = items.filter(i => i.entityType === 'task');
+                    else if (calendarAgendaFilter === 'timeblocks') items = items.filter(i => i.entityType === 'timeblock');
+                }
+
+                if (items.length > 0) {
+                    daysWithItems.push({ date: dStr, dayNum, items });
+                }
+            }
+
+            const filterTabs = [
+                { id: 'all', label: 'All Items' },
+                { id: 'events', label: 'Events' },
+                { id: 'appointments', label: 'Appointments' },
+                { id: 'tasks', label: 'Tasks' },
+                { id: 'timeblocks', label: 'Schedule' }
+            ];
+
+            const filtersHtml = `
+              <div class="cal-agenda-filter-bar">
+                ${filterTabs.map(t => `
+                  <button class="btn ${calendarAgendaFilter === t.id ? 'btn-primary' : 'btn-ghost'} btn-sm" onclick="setCalendarAgendaFilter('${t.id}')">
+                    ${t.label}
+                  </button>
+                `).join('')}
+              </div>
+            `;
+
+            if (daysWithItems.length === 0) {
+                return `
+                  <div class="cal-agenda-view-container">
+                    ${filtersHtml}
+                    <div class="card" style="text-align: center; padding: 48px 16px; color: var(--text-muted);">
+                      <div style="font-size: 36px; margin-bottom: 8px;">🗓️</div>
+                      <div style="font-size: 16px; font-weight: 700; color: var(--text-main);">No commitments found in this month</div>
+                      <div style="font-size: 13px; margin-top: 4px; margin-bottom: 16px;">Try changing the filter or add an event to get started.</div>
+                      <button class="btn btn-primary btn-sm" onclick="openEntityModal('event')">+ Add Event</button>
+                    </div>
+                  </div>
+                `;
+            }
+
+            const groupsHtml = daysWithItems.map(group => {
+                const dateObj = new Date(group.date + 'T12:00:00');
+                const titleStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                let relBadge = '';
+                if (group.date === todayStr) relBadge = '<span class="badge badge-today">Today</span>';
+                else if (group.date === tomorrowStr) relBadge = '<span class="badge badge-upcoming">Tomorrow</span>';
+                else if (group.date === yesterdayStr) relBadge = '<span class="badge badge-subtle">Yesterday</span>';
+
+                return `
+                  <div class="cal-agenda-group">
+                    <div class="cal-agenda-group-header">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <span>${titleStr}</span>
+                        ${relBadge}
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 6px;">
+                        <span class="badge badge-subtle">${group.items.length} items</span>
+                        <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openDailyPlannerForDate('${group.date}')">Plan</button>
+                        <button class="btn btn-ghost btn-sm" style="padding: 2px 6px; font-size: 11px;" onclick="openEntityModal('event', null, { date: '${group.date}' })">+</button>
+                      </div>
+                    </div>
+                    <div class="cal-agenda-group-body">
+                      ${group.items.map(item => {
+                          let typeBadgeClass = 'badge-subtle';
+                          let typeName = 'Event';
+                          if (item.entityType === 'timeblock') { typeBadgeClass = 'badge-today'; typeName = 'Schedule Block'; }
+                          else if (item.entityType === 'appointment') { typeBadgeClass = 'badge-urgent'; typeName = 'Appointment'; }
+                          else if (item.entityType === 'task') { typeBadgeClass = item.status === 'Completed' ? 'badge-completed' : 'badge-upcoming'; typeName = 'Task'; }
+                          else if (item.entityType === 'birthday') { typeBadgeClass = 'badge-high'; typeName = 'Birthday'; }
+
+                          return `
+                            <div class="cal-agenda-item type-${item.entityType}">
+                              <div class="cal-agenda-item-left">
+                                <span class="cal-agenda-item-time">${item.time}</span>
+                                <div class="cal-agenda-item-content">
+                                  <div class="cal-agenda-item-title" style="${item.status === 'Completed' ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHtml(item.title)}</div>
+                                  <div class="cal-agenda-item-meta">
+                                    <span class="badge ${typeBadgeClass}">${typeName}</span>
+                                    ${item.subtitle ? `<span>${escapeHtml(item.subtitle)}</span>` : ''}
+                                  </div>
+                                </div>
+                              </div>
+                              <div class="cal-agenda-item-actions">
+                                <button class="btn btn-ghost btn-sm" onclick="handleCalendarItemClick('${item.entityType}', '${item.id}', '${group.date}')" title="Edit"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
+                                ${item.entityType !== 'birthday' ? `
+                                  <button class="btn btn-ghost btn-sm" style="color: var(--color-urgent);" onclick="deleteCalendarItem('${item.entityType}', '${item.id}', '${escapeHtml(item.title)}')" title="Delete"><svg class="icon icon-sm"><use href="#icon-trash-2"></use></svg></button>
+                                ` : ''}
+                              </div>
+                            </div>
+                          `;
+                      }).join('')}
+                    </div>
+                  </div>
+                `;
+            }).join('');
+
+            return `
+              <div class="cal-agenda-view-container">
+                ${filtersHtml}
+                ${groupsHtml}
+              </div>
+            `;
         }
 
         // ==========================================================================
@@ -8536,11 +9803,17 @@
             return result;
         }
 
-        function syncSubscriptionExpenses(monthStr = activeMoneyMonth) {
+        function syncSubscriptionExpenses() {
             if (!appData) return;
             if (!appData.expenses) appData.expenses = [];
             const subs = appData.subscriptions || [];
             let stateChanged = false;
+
+            const now = new Date();
+            const todayIso = now.toISOString().split('T')[0];
+            const realCurrentMonth = todayIso.slice(0, 7);
+            const [curYear, curMonthNum] = realCurrentMonth.split('-').map(Number);
+            const daysInCurMonth = new Date(curYear, curMonthNum, 0).getDate();
 
             // 1. Clean up linked expenses for deleted subscriptions
             const validSubIds = new Set(subs.map(s => s.id));
@@ -8548,7 +9821,18 @@
             appData.expenses = appData.expenses.filter(e => !e.subscriptionId || validSubIds.has(e.subscriptionId));
             if (appData.expenses.length !== initialExpLen) stateChanged = true;
 
-            // 2. Sync each active subscription into expenses for monthStr
+            // 2. Prune any prematurely generated subscription expenses for future months
+            // Subscriptions must ONLY exist as expenses for the current month (or past recorded months)
+            const beforePruneLen = appData.expenses.length;
+            appData.expenses = appData.expenses.filter(e => {
+                if (e.subscriptionId && e.date && e.date.slice(0, 7) > realCurrentMonth) {
+                    return false;
+                }
+                return true;
+            });
+            if (appData.expenses.length !== beforePruneLen) stateChanged = true;
+
+            // 3. Sync each active subscription into expenses strictly for the real current month
             subs.forEach(s => {
                 // If deactivated, remove its synced expenses
                 if (s.active === false) {
@@ -8559,34 +9843,51 @@
                 }
 
                 const isYearly = s.frequency === 'Yearly';
-                const chargeAmount = parseFloat(s.cost) || 0;
+                const chargeAmount = parseFloat(s.cost || s.amount) || 0;
                 if (chargeAmount <= 0) return;
 
-                // Parse billing day or default to 05
-                let dayNum = 5;
-                if (s.nextBilling && s.nextBilling.includes('-')) {
+                // Determine renewal day
+                let renewalDay = 5;
+                if (s.billingDay && typeof s.billingDay === 'number') {
+                    renewalDay = s.billingDay;
+                } else if (s.nextBilling && s.nextBilling.includes('-')) {
                     const parts = s.nextBilling.split('-');
                     const parsed = parseInt(parts[2], 10);
-                    if (!isNaN(parsed) && parsed >= 1 && parsed <= 31) dayNum = parsed;
+                    if (!isNaN(parsed) && parsed >= 1 && parsed <= 31) renewalDay = parsed;
+                } else if (s.renewalDate && s.renewalDate.includes('-')) {
+                    const parts = s.renewalDate.split('-');
+                    const parsed = parseInt(parts[2], 10);
+                    if (!isNaN(parsed) && parsed >= 1 && parsed <= 31) renewalDay = parsed;
+                }
+                s.billingDay = renewalDay;
+
+                // Clamp day to actual days in the current month
+                const safeDay = Math.min(Math.max(1, renewalDay), daysInCurMonth).toString().padStart(2, '0');
+                const curMonthRenewalDate = `${realCurrentMonth}-${safeDay}`;
+
+                // Determine if yearly subscription should be billed in the current month
+                let shouldBillThisMonth = true;
+                if (isYearly) {
+                    let subMonth = '';
+                    const billingStr = s.nextBilling || s.renewalDate || '';
+                    if (billingStr.includes('-')) {
+                        subMonth = billingStr.split('-')[1];
+                    }
+                    const curMonthStr = String(curMonthNum).padStart(2, '0');
+                    shouldBillThisMonth = (subMonth === curMonthStr);
                 }
 
-                // Clamp day to actual days in target month
-                const [y, m] = (monthStr || new Date().toISOString().slice(0, 7)).split('-').map(Number);
-                const maxDays = new Date(y, m, 0).getDate();
-                const safeDay = Math.min(dayNum, maxDays).toString().padStart(2, '0');
-                const expenseDate = `${monthStr}-${safeDay}`;
-
-                // For yearly subscriptions, only bill if nextBilling falls in monthStr
-                const shouldBillThisMonth = !isYearly || (s.nextBilling && s.nextBilling.startsWith(monthStr));
+                const subName = s.service || s.name || 'Subscription';
+                const expectedDesc = `Subscription: ${subName}`;
 
                 if (shouldBillThisMonth) {
-                    const existing = appData.expenses.find(e => e.subscriptionId === s.id && e.date && e.date.startsWith(monthStr));
+                    const existing = appData.expenses.find(e => e.subscriptionId === s.id && e.date && e.date.startsWith(realCurrentMonth));
                     if (!existing) {
                         appData.expenses.push({
                             id: uid(),
                             subscriptionId: s.id,
-                            date: expenseDate,
-                            description: `Subscription: ${s.service}`,
+                            date: curMonthRenewalDate,
+                            description: expectedDesc,
                             category: 'Subscriptions & Media',
                             amount: chargeAmount,
                             payment: 'Auto-Pay / Card',
@@ -8594,9 +9895,9 @@
                         });
                         stateChanged = true;
                     } else {
-                        // Keep description, amount and category synchronized with the subscription definition
-                        const expectedDesc = `Subscription: ${s.service}`;
-                        if (existing.description !== expectedDesc || existing.amount !== chargeAmount || existing.category !== 'Subscriptions & Media') {
+                        // Keep date, description, amount and category synchronized with the subscription definition
+                        if (existing.date !== curMonthRenewalDate || existing.description !== expectedDesc || existing.amount !== chargeAmount || existing.category !== 'Subscriptions & Media') {
+                            existing.date = curMonthRenewalDate;
                             existing.description = expectedDesc;
                             existing.amount = chargeAmount;
                             existing.category = 'Subscriptions & Media';
@@ -8606,39 +9907,97 @@
                 } else {
                     // Yearly subscription not renewing this month: ensure no expense exists for this month
                     const beforeLen = appData.expenses.length;
-                    appData.expenses = appData.expenses.filter(e => !(e.subscriptionId === s.id && e.date && e.date.startsWith(monthStr)));
+                    appData.expenses = appData.expenses.filter(e => !(e.subscriptionId === s.id && e.date && e.date.startsWith(realCurrentMonth)));
                     if (appData.expenses.length !== beforeLen) stateChanged = true;
+                }
+
+                // 4. Keep s.nextBilling pointing to the upcoming renewal date
+                if (isYearly) {
+                    if (s.nextBilling && s.nextBilling < todayIso) {
+                        const parts = s.nextBilling.split('-');
+                        let yr = parseInt(parts[0], 10);
+                        const mo = parts[1] || '01';
+                        const dy = parts[2] || '01';
+                        while (`${yr}-${mo}-${dy}` < todayIso) {
+                            yr++;
+                        }
+                        s.nextBilling = `${yr}-${mo}-${dy}`;
+                        stateChanged = true;
+                    }
+                } else {
+                    let targetNextBilling = curMonthRenewalDate;
+                    if (curMonthRenewalDate < todayIso) {
+                        // Current month's renewal date has already passed; advance to next month
+                        const nextMonthDate = new Date(curYear, curMonthNum, 1);
+                        const nextY = nextMonthDate.getFullYear();
+                        const nextM = nextMonthDate.getMonth() + 1;
+                        const nextMaxDays = new Date(nextY, nextM, 0).getDate();
+                        const nextSafeDay = Math.min(Math.max(1, renewalDay), nextMaxDays).toString().padStart(2, '0');
+                        targetNextBilling = `${nextY}-${String(nextM).padStart(2, '0')}-${nextSafeDay}`;
+                    }
+                    if (s.nextBilling !== targetNextBilling) {
+                        s.nextBilling = targetNextBilling;
+                        stateChanged = true;
+                    }
                 }
             });
 
-            if (stateChanged && typeof saveAppData === 'function') {
-                saveAppData();
+            if (stateChanged && typeof saveData === 'function') {
+                saveData();
             }
         }
 
         function getMonthExpenses(monthStr = activeMoneyMonth, all = false) {
-            syncSubscriptionExpenses(monthStr);
+            syncSubscriptionExpenses();
             const allExpenses = appData.expenses || [];
             if (all) return allExpenses;
             return allExpenses.filter(e => e.date && e.date.startsWith(monthStr));
         }
 
-        function getCategorySpentMap(monthStr = activeMoneyMonth) {
-            syncSubscriptionExpenses(monthStr);
-            const map = {};
-            CANONICAL_MONEY_CATEGORIES.forEach(c => { map[c] = 0; });
-            const expenses = getMonthExpenses(monthStr);
-            expenses.forEach(e => {
-                const c = normalizeMoneyCategory(e.category);
-                map[c] = (map[c] || 0) + (parseFloat(e.amount) || 0);
+        function getMonthSubscriptionDetails(monthStr = activeMoneyMonth) {
+            const subs = (appData && appData.subscriptions) || [];
+            const parts = (monthStr || '').split('-');
+            const targetMonthNum = parts.length > 1 ? parts[1] : '';
+
+            let monthSubTotal = 0;
+            const applicableSubs = [];
+
+            subs.forEach(s => {
+                if (s.active === false) return;
+                const cost = parseFloat(s.cost || s.amount) || 0;
+                if (cost <= 0) return;
+
+                const isYearly = s.frequency === 'Yearly';
+                let appliesToMonth = false;
+
+                if (isYearly) {
+                    let subMonth = '';
+                    const billingStr = s.nextBilling || s.renewalDate || '';
+                    if (billingStr.includes('-')) {
+                        subMonth = billingStr.split('-')[1];
+                    }
+                    appliesToMonth = (subMonth === targetMonthNum);
+                } else {
+                    appliesToMonth = true; // Monthly subscriptions apply to every month
+                }
+
+                if (appliesToMonth) {
+                    monthSubTotal += cost;
+                    applicableSubs.push({
+                        sub: s,
+                        cost: cost,
+                        isYearly: isYearly
+                    });
+                }
             });
-            return map;
+
+            return { monthSubTotal, applicableSubs };
         }
 
         function getMonthlySubscriptionTotal() {
             return (appData.subscriptions || []).reduce((sum, s) => {
                 if (s.active === false) return sum;
-                const cost = parseFloat(s.cost) || 0;
+                const cost = parseFloat(s.cost || s.amount) || 0;
                 return sum + (s.frequency === 'Yearly' ? cost / 12 : cost);
             }, 0);
         }
@@ -8658,16 +10017,46 @@
         }
 
         function getMonthlyFinancialSummary(monthStr = activeMoneyMonth) {
-            syncSubscriptionExpenses(monthStr);
+            syncSubscriptionExpenses();
             const income = (appData.monthlyIncome !== undefined && appData.monthlyIncome !== null) ? parseFloat(appData.monthlyIncome) : 6800;
-            const monthExpenses = getMonthExpenses(monthStr);
-            const totalExpenses = monthExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const rawMonthExpenses = getMonthExpenses(monthStr);
+
+            // 1. Get active subscriptions that apply to this specific month
+            const { monthSubTotal, applicableSubs } = getMonthSubscriptionDetails(monthStr);
+
+            // 2. Build base spent map from raw logged expenses for monthStr
+            const spentMap = {};
+            CANONICAL_MONEY_CATEGORIES.forEach(c => { spentMap[c] = 0; });
+
+            let rawExpensesTotal = 0;
+            rawMonthExpenses.forEach(e => {
+                const c = normalizeMoneyCategory(e.category);
+                const amt = parseFloat(e.amount) || 0;
+                spentMap[c] = (spentMap[c] || 0) + amt;
+                rawExpensesTotal += amt;
+            });
+
+            // 3. Check which applicable subscriptions are NOT yet in rawMonthExpenses
+            // (e.g. browsing future months, or unlogged/unsynced states)
+            let unloggedSubsTotal = 0;
+            applicableSubs.forEach(item => {
+                const alreadyLogged = rawMonthExpenses.some(e => e.subscriptionId === item.sub.id);
+                if (!alreadyLogged) {
+                    unloggedSubsTotal += item.cost;
+                }
+            });
+
+            // 4. Ensure spentMap['Subscriptions & Media'] and totalExpenses include all subscriptions for this month
+            if (unloggedSubsTotal > 0) {
+                spentMap['Subscriptions & Media'] = (spentMap['Subscriptions & Media'] || 0) + unloggedSubsTotal;
+            }
+
+            const totalExpenses = rawExpensesTotal + unloggedSubsTotal;
             const remainingBudget = income - totalExpenses;
             const budgetMap = getCanonicalBudget();
             const totalBudgeted = Object.values(budgetMap).reduce((sum, v) => sum + v, 0);
             const billsSummary = getMonthlyBillsSummary(monthStr);
             const monthlySubs = getMonthlySubscriptionTotal();
-            const spentMap = getCategorySpentMap(monthStr);
 
             return {
                 income,
@@ -8676,10 +10065,17 @@
                 totalBudgeted,
                 billsSummary,
                 monthlySubs,
+                monthSubTotal,
                 spentMap,
                 budgetMap,
-                expenseCount: monthExpenses.length
+                expenseCount: rawMonthExpenses.length,
+                rawExpensesTotal,
+                unloggedSubsTotal
             };
+        }
+
+        function getCategorySpentMap(monthStr = activeMoneyMonth) {
+            return getMonthlyFinancialSummary(monthStr).spentMap;
         }
 
         // Unified Money Navigation Tab Bar
@@ -8771,6 +10167,7 @@
                     });
                 }
             });
+            slices.sort((a, b) => b.value - a.value);
 
             const isDeficit = summary.remainingBudget < 0;
 
@@ -8812,7 +10209,7 @@
               </div>
             </div>
             <div class="kpi-value">${formatCurrency(summary.totalExpenses)}</div>
-            <div class="kpi-subtext">${summary.expenseCount} logged transactions</div>
+            <div class="kpi-subtext">${summary.expenseCount} logged • Includes ${formatCurrency(summary.monthSubTotal)} subs</div>
           </div>
 
           <div class="kpi-card" style="border-left: 4px solid ${isDeficit ? 'var(--color-urgent)' : '#3B82F6'};">
@@ -8938,9 +10335,9 @@
                   <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--border-subtle); font-size: 12px; color: var(--text-secondary);">
                     <div style="display: flex; align-items: center; gap: 5px;">
                       <span style="color: #10B981; font-weight: 700;">✓</span>
-                      <span>Auto-synced with Monthly Expenses</span>
+                      <span>Included in Month Expenses & Graphs</span>
                     </div>
-                    <span style="font-family: var(--font-mono); font-weight: 600; color: var(--text-muted);">~${formatCurrency(summary.monthlySubs)}/mo avg</span>
+                    <span style="font-family: var(--font-mono); font-weight: 600; color: var(--text-muted);">${formatCurrency(summary.monthSubTotal)} due this mo</span>
                   </div>
                 </div>
               `;
@@ -10906,13 +12303,14 @@
 
             // 12. Search Subscriptions
             (appData.subscriptions || []).forEach(s => {
-                if ((s.name || '').toLowerCase().includes(q) || (s.category || '').toLowerCase().includes(q)) {
+                const subTitle = s.service || s.name || '';
+                if (subTitle.toLowerCase().includes(q) || (s.category || '').toLowerCase().includes(q)) {
                     matches.push({
                         type: 'Subscription',
                         icon: 'icon-credit-card',
                         view: 'subscriptions',
-                        title: s.name,
-                        subtitle: `${formatCurrency(s.cost)}/${s.frequency || 'mo'} • Renews: ${formatDate(s.renewalDate)}`,
+                        title: subTitle,
+                        subtitle: `${formatCurrency(s.cost || s.amount)}/${s.frequency === 'Yearly' ? 'yr' : 'mo'} • Renews: ${formatDate(s.nextBilling || s.renewalDate)}`,
                         badgeColor: 'var(--color-finances, #10B981)'
                     });
                 }
@@ -11381,13 +12779,30 @@
           <div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" name="notes">${escapeHtml(v.notes || '')}</textarea></div>
         `;
             } else if (type === 'meal') {
-                titleEl.textContent = 'Plan a Meal';
+                const dayKeys = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                const curDay = dayKeys[new Date().getDay()];
+                const selDay = (prefillData && prefillData.day) ? prefillData.day.toLowerCase() : curDay;
+                const selType = (prefillData && prefillData.mealType) ? prefillData.mealType.toLowerCase() : 'd';
+                const dayPlan = getDayMealPlan(selDay);
+                const initDish = (prefillData && prefillData.dish !== undefined) ? prefillData.dish : ((dayPlan.meals && dayPlan.meals[selType]) || '');
+                const dayLabels = {
+                    monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday',
+                    thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday'
+                };
+                titleEl.textContent = `Plan a Meal (${dayLabels[selDay] || 'Today'})`;
                 bodyEl.innerHTML = `
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Day of the Week</label><select class="form-control" name="day"><option value="monday">Monday</option><option value="tuesday">Tuesday</option><option value="wednesday">Wednesday</option><option value="thursday">Thursday</option><option value="friday">Friday</option><option value="saturday">Saturday</option><option value="sunday">Sunday</option></select></div>
-            <div class="form-group"><label class="form-label">Meal Type</label><select class="form-control" name="mealType"><option value="d">Dinner</option><option value="b">Breakfast</option><option value="l">Lunch</option><option value="s">Snack</option></select></div>
+            <div class="form-group"><label class="form-label">Day of the Week</label><select class="form-control" name="day" onchange="const dp = getDayMealPlan(this.value); const mt = this.form.querySelector('select[name=mealType]').value; const di = this.form.querySelector('input[name=dish]'); if (di && dp.meals && dp.meals[mt]) di.value = dp.meals[mt];">
+              ${['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(d => `<option value="${d}" ${d === selDay ? 'selected' : ''}>${dayLabels[d]}</option>`).join('')}
+            </select></div>
+            <div class="form-group"><label class="form-label">Meal Type</label><select class="form-control" name="mealType" onchange="const d = this.form.querySelector('select[name=day]').value; const dp = getDayMealPlan(d); const di = this.form.querySelector('input[name=dish]'); if (di && dp.meals && dp.meals[this.value]) di.value = dp.meals[this.value];">
+              <option value="b" ${selType === 'b' ? 'selected' : ''}>Breakfast</option>
+              <option value="l" ${selType === 'l' ? 'selected' : ''}>Lunch</option>
+              <option value="d" ${selType === 'd' ? 'selected' : ''}>Dinner</option>
+              <option value="s" ${selType === 's' ? 'selected' : ''}>Snack</option>
+            </select></div>
           </div>
-          <div class="form-group"><label class="form-label">Meal Dish / Title <span class="required">*</span></label><input type="text" class="form-control" name="dish" required placeholder="e.g. Sheet Pan Lemon Herb Chicken"></div>
+          <div class="form-group"><label class="form-label">Meal Dish / Title <span class="required">*</span></label><input type="text" class="form-control" name="dish" required value="${escapeHtml(initDish)}" placeholder="e.g. Sheet Pan Lemon Herb Chicken"></div>
         `;
             } else if (type === 'recipe') {
                 titleEl.textContent = isEdit ? `Edit Recipe: ${existing ? existing.name : ''}` : 'Add New Family Recipe';
@@ -12192,6 +13607,11 @@
                 }
             } else if (currentCrudType === 'subscription') {
                 const cat = normalizeMoneyCategory(data.category);
+                let dayNum = 5;
+                if (data.nextBilling && data.nextBilling.includes('-')) {
+                    const parsedDay = parseInt(data.nextBilling.split('-')[2], 10);
+                    if (!isNaN(parsedDay) && parsedDay >= 1 && parsedDay <= 31) dayNum = parsedDay;
+                }
                 if (isEdit) {
                     const item = (appData.subscriptions || []).find(s => s.id === currentCrudItemId);
                     if (item) {
@@ -12200,9 +13620,10 @@
                         item.frequency = data.frequency;
                         item.category = cat;
                         item.nextBilling = data.nextBilling;
+                        item.billingDay = dayNum;
                         item.notes = data.notes;
                     }
-                    syncSubscriptionExpenses(activeMoneyMonth);
+                    syncSubscriptionExpenses();
                     showToast(`Subscription updated!`, 'success');
                 } else {
                     if (!appData.subscriptions) appData.subscriptions = [];
@@ -12213,9 +13634,11 @@
                         frequency: data.frequency || 'Monthly',
                         category: cat,
                         nextBilling: data.nextBilling || todayStr,
+                        billingDay: dayNum,
+                        active: true,
                         notes: data.notes || ''
                     });
-                    syncSubscriptionExpenses(activeMoneyMonth);
+                    syncSubscriptionExpenses();
                     showToast(`Subscription added!`, 'success');
                 }
             } else if (currentCrudType === 'savings') {
@@ -12512,12 +13935,24 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadData();
             applyThemeSettings();
-            renderCurrentView();
+            const initialHash = window.location.hash ? window.location.hash.slice(1) : '';
+            if (initialHash && VIEW_TITLES[initialHash]) {
+                navigateTo(initialHash);
+            } else {
+                renderCurrentView();
+            }
             updateNavBadges();
 
             // If user hasn't seen welcome yet, open it
             if (!appData.settings || !appData.settings.hasSeenWelcome) {
                 openModal('modalWelcome');
+            }
+        });
+
+        window.addEventListener('hashchange', () => {
+            const h = window.location.hash ? window.location.hash.slice(1) : '';
+            if (h && VIEW_TITLES[h] && h !== currentView) {
+                navigateTo(h);
             }
         });
 
@@ -12589,7 +14024,7 @@
 
         function exportSubscriptionsCSV() {
             const rows = (appData.subscriptions || []).map(s => [
-                s.name, s.amount || 0, s.billingCycle || '', s.nextBilling || s.renewalDate || '',
+                s.service || s.name || '', s.cost || s.amount || 0, s.frequency || s.billingCycle || 'Monthly', s.nextBilling || s.renewalDate || '',
                 s.category || '', s.notes || ''
             ]);
             const csv = buildCSV(['Service','Amount','Billing Cycle','Next Billing','Category','Notes'], rows);
@@ -12903,8 +14338,8 @@
                 b.dueDate || '—', buildStatusBadge(b.paid ? 'Paid' : 'Pending'), b.frequency || '—'
             ]);
             const subRows = subs.map(s => [
-                s.name, `<strong>${sym}${parseFloat(s.amount||0).toFixed(2)}</strong>`,
-                s.billingCycle || '—', s.nextBilling || s.renewalDate || '—', s.category || '—'
+                s.service || s.name || '-', `<strong>${sym}${parseFloat(s.cost || s.amount || 0).toFixed(2)}</strong>`,
+                s.frequency || s.billingCycle || 'Monthly', s.nextBilling || s.renewalDate || '—', s.category || '—'
             ]);
             const savingsRows = savings.map(g => {
                 const pct = g.target > 0 ? Math.round(g.current/g.target*100) : 0;
