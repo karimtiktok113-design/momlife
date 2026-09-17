@@ -1702,6 +1702,11 @@
             transform: scale(0.92);
         }
 
+        /* Mobile bottom nav bar — hidden on desktop, shown only on mobile via @media (max-width: 768px) */
+        .mobile-bottom-bar {
+            display: none;
+        }
+
         /* ==========================================================================
        PRINT STYLES
        ========================================================================== */
@@ -2664,6 +2669,134 @@
                 font-size: 12px;
             }
         }
+
+        /* ========================================================================
+           PRINT STYLES — HTML Layout Print (infographic, branded)
+           ======================================================================== */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 15mm 12mm 18mm 12mm;
+            }
+
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+            /* Hide chrome UI */
+            .app-sidebar, .app-header, .bottom-nav-bar, .toast-container,
+            .modal-backdrop, .mobile-backdrop, #mobileBackdrop,
+            button:not(.print-keep), .btn:not(.print-keep),
+            [onclick]:not(.print-keep), #autoSaveIndicator,
+            .nav-item, .sidebar-brand, .sidebar-profile, .sidebar-nav { display: none !important; }
+
+            body, html { background: #FFFFFF !important; color: #1F2937 !important; font-size: 12px !important; }
+
+            .app-shell { display: block !important; }
+            .app-workspace { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; overflow: visible !important; }
+
+            /* Print header injected dynamically */
+            #printHeader {
+                display: block !important;
+                border-bottom: 3px solid var(--primary, #D946EF);
+                padding-bottom: 12px;
+                margin-bottom: 18px;
+            }
+
+            .card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+                border: 1px solid #E5E7EB !important;
+                box-shadow: none !important;
+                margin-bottom: 12px !important;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(4, 1fr) !important;
+            }
+
+            .kpi-card {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+
+            table { width: 100% !important; }
+            th, td { font-size: 10px !important; padding: 5px 7px !important; }
+
+            h2, h3 { color: #111827 !important; }
+            .text-muted, [style*="color: var(--text-muted)"] { color: #6B7280 !important; }
+
+            /* Infographic badges in print */
+            .badge { border: 1px solid currentColor !important; }
+
+            /* Page breaks for large data sections */
+            .print-page-break { page-break-before: always !important; }
+            .print-avoid-break { break-inside: avoid !important; page-break-inside: avoid !important; }
+
+            /* SVG charts print correctly */
+            svg { overflow: visible !important; }
+        }
+
+        /* Export Hub button styles */
+        .export-hub-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .export-card {
+            background: var(--bg-subtle);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .export-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-soft, rgba(217, 70, 239, 0.1));
+            transform: translateY(-2px);
+        }
+
+        .export-card-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .export-card-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .export-card-desc {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .export-card-type {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 20px;
+            align-self: flex-start;
+        }
+
+        .export-type-csv { background: #ECFDF5; color: #059669; }
+        .export-type-pdf { background: #FEF2F2; color: #DC2626; }
+        .export-type-print { background: #EFF6FF; color: #2563EB; }
     </style>
 </head>
 
@@ -11215,6 +11348,1030 @@
                 openModal('modalWelcome');
             }
         });
+
+
+        // ===========================================================================
+        // EXPORT ENGINE — CSV, PDF (Infographic) & HTML Print
+        // All exports use live appData for perfect sync
+        // ===========================================================================
+
+        const EXPORT_DATE = () => new Date().toISOString().split('T')[0];
+        const FAMILY_NAME = () => (appData && appData.profile && appData.profile.familyName) || 'My Family';
+        const MOM_NAME = () => (appData && appData.profile && appData.profile.name) || 'Mom';
+
+        /* ---- CORE UTILITY: Download any blob/string as file ---- */
+        function downloadFile(content, filename, mimeType = 'text/plain') {
+            const blob = content instanceof Blob ? content : new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+        }
+
+        /* ---- CSV BUILDER ---- */
+        function buildCSV(headers, rows) {
+            const escape = v => {
+                const s = String(v == null ? '' : v).replace(/"/g, '""');
+                return /[",\n\r]/.test(s) ? `"${s}"` : s;
+            };
+            const lines = [headers.map(escape).join(',')];
+            rows.forEach(row => lines.push(row.map(escape).join(',')));
+            return lines.join('\r\n');
+        }
+
+        /* ============================================================
+           CSV EXPORTS — All Sections
+        ============================================================ */
+
+        function exportTasksCSV() {
+            const rows = (appData.tasks || []).map(t => [
+                t.title, t.status, t.priority, t.category, t.dueDate || '', t.dueTime || '', t.assignee || '', t.notes || ''
+            ]);
+            const csv = buildCSV(['Title','Status','Priority','Category','Due Date','Due Time','Assignee','Notes'], rows);
+            downloadFile(csv, `tasks-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Tasks exported as CSV ✅', 'success');
+        }
+
+        function exportExpensesCSV() {
+            const rows = (appData.expenses || []).map(e => [
+                e.date || '', e.description || e.title || '', e.category || '', e.amount || 0,
+                e.paymentMethod || '', e.notes || ''
+            ]);
+            const csv = buildCSV(['Date','Description','Category','Amount','Payment Method','Notes'], rows);
+            downloadFile(csv, `expenses-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Expenses exported as CSV ✅', 'success');
+        }
+
+        function exportBillsCSV() {
+            const rows = (appData.bills || []).map(b => [
+                b.name, b.amount || 0, b.dueDate || '', b.paid ? 'Paid' : 'Unpaid',
+                b.category || '', b.frequency || '', b.notes || ''
+            ]);
+            const csv = buildCSV(['Name','Amount','Due Date','Status','Category','Frequency','Notes'], rows);
+            downloadFile(csv, `bills-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Bills exported as CSV ✅', 'success');
+        }
+
+        function exportSubscriptionsCSV() {
+            const rows = (appData.subscriptions || []).map(s => [
+                s.name, s.amount || 0, s.billingCycle || '', s.nextBilling || s.renewalDate || '',
+                s.category || '', s.notes || ''
+            ]);
+            const csv = buildCSV(['Service','Amount','Billing Cycle','Next Billing','Category','Notes'], rows);
+            downloadFile(csv, `subscriptions-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Subscriptions exported as CSV ✅', 'success');
+        }
+
+        function exportSavingsCSV() {
+            const rows = (appData.savings || []).map(s => [
+                s.name || s.goal, s.target || 0, s.current || 0,
+                s.target > 0 ? Math.round((s.current / s.target) * 100) + '%' : '0%',
+                s.deadline || '', s.notes || ''
+            ]);
+            const csv = buildCSV(['Goal Name','Target Amount','Saved Amount','Progress','Deadline','Notes'], rows);
+            downloadFile(csv, `savings-goals-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Savings goals exported as CSV ✅', 'success');
+        }
+
+        function exportGroceriesCSV() {
+            const rows = (appData.groceries || []).map(g => [
+                g.item, g.category || '', g.quantity || '', g.price || 0, g.purchased ? 'Purchased' : 'Pending', g.notes || ''
+            ]);
+            const csv = buildCSV(['Item','Category','Quantity','Est. Price','Status','Notes'], rows);
+            downloadFile(csv, `grocery-list-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Grocery list exported as CSV ✅', 'success');
+        }
+
+        function exportPantryCSV() {
+            const rows = (appData.pantry || []).map(p => [
+                p.item || p.name, p.category || '', p.quantity || '', p.unit || '',
+                p.expiryDate || '', p.location || '', p.notes || ''
+            ]);
+            const csv = buildCSV(['Item','Category','Quantity','Unit','Expiry Date','Location','Notes'], rows);
+            downloadFile(csv, `pantry-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Pantry exported as CSV ✅', 'success');
+        }
+
+        function exportAppointmentsCSV() {
+            const rows = (appData.appointments || []).map(a => [
+                a.title, a.person || '', a.date || '', a.time || '', a.category || '',
+                a.location || '', a.contact || '', a.notes || ''
+            ]);
+            const csv = buildCSV(['Title','Person','Date','Time','Category','Location','Contact','Notes'], rows);
+            downloadFile(csv, `appointments-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Appointments exported as CSV ✅', 'success');
+        }
+
+        function exportContactsCSV() {
+            const rows = (appData.contacts || []).map(c => [
+                c.name, c.relationship || '', c.phone || '', c.email || '', c.address || '', c.notes || ''
+            ]);
+            const csv = buildCSV(['Name','Relationship','Phone','Email','Address','Notes'], rows);
+            downloadFile(csv, `contacts-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Contacts exported as CSV ✅', 'success');
+        }
+
+        function exportHabitsCSV() {
+            const rows = (appData.habits || []).map(h => {
+                const streak = h.history ? h.history.length : 0;
+                const today = new Date().toISOString().split('T')[0];
+                const donedToday = h.history && h.history.includes(today) ? 'Yes' : 'No';
+                return [h.name, h.category || '', h.frequency || 'Daily', streak, donedToday, h.notes || ''];
+            });
+            const csv = buildCSV(['Habit','Category','Frequency','Total Completions','Done Today','Notes'], rows);
+            downloadFile(csv, `habits-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Habits exported as CSV ✅', 'success');
+        }
+
+        function exportGoalsCSV() {
+            const rows = (appData.goals || []).map(g => [
+                g.title || g.name, g.category || '', g.deadline || '', g.status || '',
+                g.progress || '0%', g.notes || ''
+            ]);
+            const csv = buildCSV(['Goal','Category','Deadline','Status','Progress','Notes'], rows);
+            downloadFile(csv, `goals-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Goals exported as CSV ✅', 'success');
+        }
+
+        function exportChoresCSV() {
+            const rows = (appData.chores || []).map(c => [
+                c.chore, c.assignedTo || '', c.frequency || '', c.due || '', c.status || '', c.reward || '', c.notes || ''
+            ]);
+            const csv = buildCSV(['Chore','Assigned To','Frequency','Due','Status','Reward','Notes'], rows);
+            downloadFile(csv, `chores-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Chores exported as CSV ✅', 'success');
+        }
+
+        function exportCleaningCSV() {
+            const rows = (appData.cleaning || []).map(c => [
+                c.task, c.room || '', c.frequency || '', c.done ? 'Done' : 'Pending', c.notes || ''
+            ]);
+            const csv = buildCSV(['Task','Room','Frequency','Status','Notes'], rows);
+            downloadFile(csv, `cleaning-schedule-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Cleaning schedule exported as CSV ✅', 'success');
+        }
+
+        function exportInventoryCSV() {
+            const rows = (appData.inventory || []).map(i => [
+                i.item, i.category || '', i.location || '', i.quantity || 0, i.minQuantity || 0,
+                i.quantity < i.minQuantity ? 'Low Stock' : 'OK', i.notes || ''
+            ]);
+            const csv = buildCSV(['Item','Category','Location','Qty','Min Qty','Stock Status','Notes'], rows);
+            downloadFile(csv, `household-inventory-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Household inventory exported as CSV ✅', 'success');
+        }
+
+        function exportMaintenanceCSV() {
+            const rows = (appData.maintenance || []).map(m => [
+                m.task, m.area || '', m.frequency || '', m.lastDone || '', m.nextDue || '',
+                m.cost || '', m.provider || '', m.notes || ''
+            ]);
+            const csv = buildCSV(['Task','Area','Frequency','Last Done','Next Due','Cost','Provider','Notes'], rows);
+            downloadFile(csv, `home-maintenance-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Maintenance log exported as CSV ✅', 'success');
+        }
+
+        function exportEventsCSV() {
+            const rows = (appData.events || []).map(e => [
+                e.title, e.date || '', e.startTime || '', e.endTime || '',
+                e.category || '', e.member || '', e.location || '', e.notes || ''
+            ]);
+            const csv = buildCSV(['Event','Date','Start Time','End Time','Category','Family Member','Location','Notes'], rows);
+            downloadFile(csv, `family-events-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Family events exported as CSV ✅', 'success');
+        }
+
+        function exportBirthdaysCSV() {
+            const rows = (appData.birthdays || []).map(b => [
+                b.name, b.date || '', b.relationship || '', b.gift || '', b.budget || '', b.notes || ''
+            ]);
+            const csv = buildCSV(['Name','Date','Relationship','Gift Idea','Budget','Notes'], rows);
+            downloadFile(csv, `birthdays-events-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Birthdays exported as CSV ✅', 'success');
+        }
+
+        function exportSchoolCSV() {
+            const rows = (appData.schoolItems || []).map(s => [
+                s.title, s.child || '', s.subject || '', s.type || '', s.dueDate || '', s.status || '', s.notes || ''
+            ]);
+            const csv = buildCSV(['Assignment','Child','Subject','Type','Due Date','Status','Notes'], rows);
+            downloadFile(csv, `school-planner-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('School planner exported as CSV ✅', 'success');
+        }
+
+        function exportWellnessCSV() {
+            const rows = (appData.wellnessLogs || []).map(w => [
+                w.date || '', w.mood || '', w.energy || '', w.waterGlasses || w.water || '',
+                w.sleepHours || w.sleep || '', w.movementMinutes || w.exercise || '', w.notes || ''
+            ]);
+            const csv = buildCSV(['Date','Mood','Energy (1-5)','Water Glasses','Sleep Hours','Exercise (min)','Notes'], rows);
+            downloadFile(csv, `wellness-log-${EXPORT_DATE()}.csv`, 'text/csv');
+            showToast('Wellness log exported as CSV ✅', 'success');
+        }
+
+        function exportAllDataCSV() {
+            // Master CSV bundle — all major sections
+            exportTasksCSV();
+            setTimeout(() => exportExpensesCSV(), 300);
+            setTimeout(() => exportAppointmentsCSV(), 600);
+            setTimeout(() => exportGroceriesCSV(), 900);
+            showToast('Exporting all sections as CSV files... 📦', 'info');
+        }
+
+        /* ============================================================
+           PDF ENGINE — Infographic, Styled, Multi-page via print()
+           Uses a hidden iframe rendered with full branding
+        ============================================================ */
+
+        function buildPDFHeader(title, subtitle = '') {
+            const name = FAMILY_NAME();
+            const mom = MOM_NAME();
+            const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:14px;border-bottom:3px solid #D946EF;margin-bottom:20px;">
+              <div style="display:flex;align-items:center;gap:14px;">
+                <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#D946EF,#F43F5E);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;">💕</div>
+                <div>
+                  <div style="font-size:18px;font-weight:900;color:#111827;">${title}</div>
+                  <div style="font-size:12px;color:#6B7280;margin-top:2px;">${subtitle || name + ' — ' + mom}</div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:11px;color:#6B7280;">
+                <div style="font-weight:700;color:#374151;">Mom Life Organizer Pro</div>
+                <div>${date}</div>
+              </div>
+            </div>`;
+        }
+
+        function buildInfographicKPI(label, value, icon, color) {
+            return `
+            <div style="background:${color}15;border:1.5px solid ${color}30;border-left:4px solid ${color};border-radius:12px;padding:14px 16px;break-inside:avoid;">
+              <div style="font-size:11px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">${icon} ${label}</div>
+              <div style="font-size:24px;font-weight:900;color:#111827;">${value}</div>
+            </div>`;
+        }
+
+        function buildPDFTable(headers, rows, stripColor = '#F9FAFB') {
+            const headerCells = headers.map(h => `<th style="padding:9px 11px;text-align:left;font-size:11px;font-weight:700;color:#374151;background:#F3F4F6;border-bottom:2px solid #E5E7EB;">${h}</th>`).join('');
+            const bodyRows = rows.map((row, i) => {
+                const bg = i % 2 === 0 ? '#FFFFFF' : stripColor;
+                const cells = row.map(cell => `<td style="padding:8px 11px;font-size:11px;color:#374151;border-bottom:1px solid #F3F4F6;vertical-align:top;word-break:break-word;">${cell == null ? '' : String(cell)}</td>`).join('');
+                return `<tr style="background:${bg};">${cells}</tr>`;
+            }).join('');
+            return `<table style="width:100%;border-collapse:collapse;border:1px solid #E5E7EB;border-radius:10px;overflow:hidden;font-family:'Plus Jakarta Sans',system-ui,sans-serif;">
+                <thead><tr>${headerCells}</tr></thead>
+                <tbody>${bodyRows}</tbody>
+            </table>`;
+        }
+
+        function buildStatusBadge(status) {
+            const map = {
+                'Completed': ['#DCFCE7','#15803D'],
+                'Done': ['#DCFCE7','#15803D'],
+                'Paid': ['#DCFCE7','#15803D'],
+                'In Progress': ['#FEF9C3','#A16207'],
+                'To Do': ['#EFF6FF','#1D4ED8'],
+                'Pending': ['#FFF7ED','#C2410C'],
+                'Low Stock': ['#FEF2F2','#DC2626'],
+                'OK': ['#F0FDF4','#16A34A'],
+            };
+            const [bg, color] = map[status] || ['#F3F4F6','#374151'];
+            return `<span style="background:${bg};color:${color};font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;">${status}</span>`;
+        }
+
+        function openPDFWindow(htmlContent, filename) {
+            const win = window.open('', '_blank');
+            if (!win) {
+                showToast('Pop-up blocked! Please allow pop-ups and try again.', 'error');
+                return;
+            }
+            win.document.write(`<!DOCTYPE html><html lang="en"><head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width,initial-scale=1">
+                <title>${filename}</title>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+                <style>
+                  @page { size: A4 portrait; margin: 15mm 12mm 18mm 12mm; }
+                  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; box-sizing: border-box; }
+                  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #fff; color: #1F2937; font-size: 12px; line-height: 1.5; margin: 0; padding: 0; }
+                  .pdf-page { max-width: 794px; margin: 0 auto; padding: 20px 24px; }
+                  h2 { font-size: 16px; font-weight: 800; color: #111827; margin: 0 0 4px; }
+                  h3 { font-size: 13px; font-weight: 700; color: #374151; margin: 16px 0 8px; }
+                  .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 16px 0; }
+                  @media (max-width: 600px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
+                  .section { margin-bottom: 24px; }
+                  .page-break { page-break-before: always; break-before: page; padding-top: 20px; }
+                  .no-break { page-break-inside: avoid; break-inside: avoid; }
+                  .footer { margin-top: 30px; padding-top: 10px; border-top: 1px solid #E5E7EB; text-align: center; font-size: 10px; color: #9CA3AF; }
+                  @media print {
+                    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                    .no-print { display: none !important; }
+                  }
+                </style>
+            </head><body><div class="pdf-page">${htmlContent}
+            <div class="footer">Mom Life Organizer Pro &nbsp;•&nbsp; Generated ${new Date().toLocaleString()} &nbsp;•&nbsp; 100% Private & Offline</div>
+            </div>
+            <div class="no-print" style="position:fixed;bottom:20px;right:20px;z-index:999;display:flex;gap:10px;">
+              <button onclick="window.print()" style="background:linear-gradient(135deg,#D946EF,#F43F5E);color:#fff;border:none;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(217,70,239,0.35);">🖨️ Save as PDF</button>
+              <button onclick="window.close()" style="background:#F3F4F6;color:#374151;border:none;padding:10px 18px;border-radius:30px;font-size:13px;font-weight:700;cursor:pointer;">✕ Close</button>
+            </div>
+            </body></html>`);
+            win.document.close();
+            showToast('PDF preview opened — click "Save as PDF" to download! 📄', 'success');
+        }
+
+        /* ---- PDF: Tasks Report ---- */
+        function exportTasksPDF() {
+            const tasks = appData.tasks || [];
+            const done = tasks.filter(t => t.status === 'Completed').length;
+            const urgent = tasks.filter(t => t.priority === 'Urgent' || t.priority === 'High').length;
+            const rows = tasks.map(t => [
+                `<strong>${t.title}</strong>`, buildStatusBadge(t.status),
+                `<span style="color:${t.priority === 'Urgent' ? '#DC2626' : t.priority === 'High' ? '#D97706' : '#374151'};font-weight:700;">${t.priority}</span>`,
+                t.category || '', t.dueDate || '—', t.assignee || '—', t.notes || '—'
+            ]);
+            const html = `
+            ${buildPDFHeader('Task Manager Report', `${tasks.length} Tasks • ${done} Completed`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Total Tasks', tasks.length, '📋', '#6366F1')}
+              ${buildInfographicKPI('Completed', done, '✅', '#10B981')}
+              ${buildInfographicKPI('Urgent / High', urgent, '🔥', '#EF4444')}
+              ${buildInfographicKPI('Completion Rate', tasks.length > 0 ? Math.round(done/tasks.length*100)+'%' : '0%', '📊', '#F59E0B')}
+            </div>
+            <div class="section no-break">
+              <h3>All Tasks</h3>
+              ${rows.length ? buildPDFTable(['Task','Status','Priority','Category','Due Date','Assignee','Notes'], rows) : '<p style="color:#6B7280;font-style:italic;">No tasks added yet.</p>'}
+            </div>`;
+            openPDFWindow(html, `Mom-Tasks-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Financial Report ---- */
+        function exportFinancialPDF() {
+            const expenses = appData.expenses || [];
+            const bills = appData.bills || [];
+            const subs = appData.subscriptions || [];
+            const savings = appData.savings || [];
+            const income = appData.monthlyIncome || 0;
+            const totalExp = expenses.reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+            const totalBills = bills.filter(b => !b.paid).reduce((s,b) => s + (parseFloat(b.amount)||0), 0);
+            const totalSubs = subs.reduce((s,s2) => s + (parseFloat(s2.amount)||0), 0);
+            const totalSaved = savings.reduce((s,g) => s + (parseFloat(g.current)||0), 0);
+            const sym = (appData.settings && appData.settings.currency) || '$';
+
+            const expRows = expenses.slice(0,40).map(e => [
+                e.date || '—', e.description || e.title || '—', e.category || '—',
+                `<strong>${sym}${parseFloat(e.amount||0).toFixed(2)}</strong>`, e.notes || '—'
+            ]);
+            const billRows = bills.map(b => [
+                b.name, `<strong>${sym}${parseFloat(b.amount||0).toFixed(2)}</strong>`,
+                b.dueDate || '—', buildStatusBadge(b.paid ? 'Paid' : 'Pending'), b.frequency || '—'
+            ]);
+            const subRows = subs.map(s => [
+                s.name, `<strong>${sym}${parseFloat(s.amount||0).toFixed(2)}</strong>`,
+                s.billingCycle || '—', s.nextBilling || s.renewalDate || '—', s.category || '—'
+            ]);
+            const savingsRows = savings.map(g => {
+                const pct = g.target > 0 ? Math.round(g.current/g.target*100) : 0;
+                return [
+                    g.name || g.goal, `${sym}${parseFloat(g.current||0).toFixed(0)}`,
+                    `${sym}${parseFloat(g.target||0).toFixed(0)}`,
+                    `<div style="background:#E5E7EB;border-radius:99px;height:8px;overflow:hidden;"><div style="background:#10B981;width:${Math.min(pct,100)}%;height:100%;"></div></div> <span style="font-size:10px;">${pct}%</span>`,
+                    g.deadline || '—'
+                ];
+            });
+            const html = `
+            ${buildPDFHeader('Family Financial Report', `Budget Overview • ${FAMILY_NAME()}`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Monthly Income', sym + income.toLocaleString(), '💰', '#10B981')}
+              ${buildInfographicKPI('Total Expenses', sym + totalExp.toFixed(0), '📉', '#EF4444')}
+              ${buildInfographicKPI('Bills Due', sym + totalBills.toFixed(0), '🧾', '#F59E0B')}
+              ${buildInfographicKPI('Total Saved', sym + totalSaved.toFixed(0), '🏦', '#6366F1')}
+            </div>
+            <div class="section no-break"><h3>Expense Log (up to 40 entries)</h3>
+              ${expRows.length ? buildPDFTable(['Date','Description','Category','Amount','Notes'], expRows) : '<p style="color:#6B7280;font-style:italic;">No expenses logged.</p>'}
+            </div>
+            <div class="page-break"></div>
+            <div class="section no-break"><h3>Bills & Due Dates</h3>
+              ${billRows.length ? buildPDFTable(['Bill Name','Amount','Due Date','Status','Frequency'], billRows) : '<p style="color:#6B7280;font-style:italic;">No bills added.</p>'}
+            </div>
+            <div class="section no-break"><h3>Subscriptions</h3>
+              ${subRows.length ? buildPDFTable(['Service','Amount','Cycle','Next Billing','Category'], subRows) : '<p style="color:#6B7280;font-style:italic;">No subscriptions tracked.</p>'}
+            </div>
+            <div class="section no-break"><h3>Savings Goals</h3>
+              ${savingsRows.length ? buildPDFTable(['Goal','Saved','Target','Progress','Deadline'], savingsRows) : '<p style="color:#6B7280;font-style:italic;">No savings goals yet.</p>'}
+            </div>`;
+            openPDFWindow(html, `Mom-Finances-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Family Schedule ---- */
+        function exportSchedulePDF() {
+            const events = appData.events || [];
+            const appts = appData.appointments || [];
+            const tasks = appData.tasks || [];
+            const allItems = [
+                ...events.map(e => [e.date||'—', e.startTime||'—', e.title, 'Family Event', e.member||'—', e.location||'—']),
+                ...appts.map(a => [a.date||'—', a.time||'—', a.title, 'Appointment', a.person||'—', a.location||'—']),
+                ...tasks.map(t => [t.dueDate||'—', t.dueTime||'—', t.title, 'Task', t.assignee||'—', t.category||'—'])
+            ].sort((a,b) => (a[0]||'').localeCompare(b[0]||'') || (a[1]||'').localeCompare(b[1]||''));
+
+            const typeColor = t => t === 'Family Event' ? '#8B5CF6' : t === 'Appointment' ? '#F59E0B' : '#3B82F6';
+            const rows = allItems.map(r => [
+                r[0], r[1],
+                `<strong>${r[2]}</strong>`,
+                `<span style="background:${typeColor(r[3])}20;color:${typeColor(r[3])};font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;">${r[3]}</span>`,
+                r[4], r[5]
+            ]);
+            const html = `
+            ${buildPDFHeader('Family Schedule Report', `${allItems.length} Upcoming Items • ${FAMILY_NAME()}`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Family Events', events.length, '📅', '#8B5CF6')}
+              ${buildInfographicKPI('Appointments', appts.length, '🏥', '#F59E0B')}
+              ${buildInfographicKPI('Tasks', tasks.length, '✅', '#3B82F6')}
+              ${buildInfographicKPI('Total Items', allItems.length, '📊', '#10B981')}
+            </div>
+            <div class="section">
+              <h3>Complete Family Schedule (Chronological)</h3>
+              ${rows.length ? buildPDFTable(['Date','Time','Title','Type','Person','Location'], rows) : '<p style="color:#6B7280;font-style:italic;">No scheduled items found.</p>'}
+            </div>`;
+            openPDFWindow(html, `Family-Schedule-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Grocery List ---- */
+        function exportGroceryPDF() {
+            const groceries = appData.groceries || [];
+            const pantry = appData.pantry || [];
+            const pending = groceries.filter(g => !g.purchased);
+            const sym = (appData.settings && appData.settings.currency) || '$';
+            const totalEst = pending.reduce((s,g) => s + (parseFloat(g.price)||0), 0);
+
+            // Group by category
+            const cats = {};
+            pending.forEach(g => { const c = g.category || 'Other'; if (!cats[c]) cats[c] = []; cats[c].push(g); });
+            let catHTML = '';
+            Object.entries(cats).forEach(([cat, items]) => {
+                catHTML += `<h3 style="color:#D946EF;margin:16px 0 8px;">${cat} (${items.length})</h3>`;
+                catHTML += buildPDFTable(['☐','Item','Qty','Est. Price'],
+                    items.map(i => ['', i.item, i.quantity || '1', sym + (parseFloat(i.price)||0).toFixed(2)]));
+            });
+
+            const pantryRows = pantry.slice(0,30).map(p => [
+                p.item||p.name, p.category||'—', p.quantity||'—', p.expiryDate||'—', p.location||'—'
+            ]);
+            const html = `
+            ${buildPDFHeader('Smart Grocery List', `${pending.length} Items to Buy • Est. ${sym}${totalEst.toFixed(2)}`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Items to Buy', pending.length, '🛒', '#D946EF')}
+              ${buildInfographicKPI('Est. Total', sym + totalEst.toFixed(2), '💳', '#10B981')}
+              ${buildInfographicKPI('Categories', Object.keys(cats).length, '📦', '#6366F1')}
+              ${buildInfographicKPI('Already Bought', groceries.filter(g => g.purchased).length, '✅', '#F59E0B')}
+            </div>
+            <div class="section">${catHTML || '<p style="color:#6B7280;font-style:italic;">No grocery items pending.</p>'}</div>
+            ${pantry.length > 0 ? `
+            <div class="page-break"></div>
+            <div class="section no-break">
+              <h3>Pantry Stock (up to 30 items)</h3>
+              ${buildPDFTable(['Item','Category','Qty','Expiry','Location'], pantryRows)}
+            </div>` : ''}`;
+            openPDFWindow(html, `Grocery-List-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Home Report ---- */
+        function exportHomePDF() {
+            const cleaning = appData.cleaning || [];
+            const chores = appData.chores || [];
+            const maintenance = appData.maintenance || [];
+            const inventory = appData.inventory || [];
+
+            const cleaningRows = cleaning.map(c => [c.task, c.room||'—', c.frequency||'—', buildStatusBadge(c.done ? 'Done' : 'Pending'), c.notes||'—']);
+            const choreRows = chores.map(c => [c.chore, c.assignedTo||'—', c.frequency||'—', c.due||'—', buildStatusBadge(c.status||'To Do'), c.reward||'—']);
+            const maintRows = maintenance.map(m => [m.task, m.area||'—', m.frequency||'—', m.lastDone||'—', m.nextDue||'—', m.provider||'—']);
+            const invLowRows = inventory.filter(i => i.quantity < i.minQuantity).map(i => [i.item, i.category||'—', i.quantity||0, i.minQuantity||0, i.location||'—']);
+
+            const html = `
+            ${buildPDFHeader('Home Management Report', `${FAMILY_NAME()} — Cleaning, Chores & Maintenance`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Cleaning Tasks', cleaning.length, '🧹', '#06B6D4')}
+              ${buildInfographicKPI('Active Chores', chores.length, '🏠', '#8B5CF6')}
+              ${buildInfographicKPI('Maintenance Items', maintenance.length, '🔧', '#F59E0B')}
+              ${buildInfographicKPI('Low Stock Items', inventory.filter(i => i.quantity < i.minQuantity).length, '⚠️', '#EF4444')}
+            </div>
+            <div class="section no-break"><h3>Cleaning Schedule</h3>
+              ${cleaningRows.length ? buildPDFTable(['Task','Room','Frequency','Status','Notes'], cleaningRows) : '<p style="color:#6B7280;font-style:italic;">No cleaning tasks.</p>'}
+            </div>
+            <div class="page-break"></div>
+            <div class="section no-break"><h3>Family Chore Board</h3>
+              ${choreRows.length ? buildPDFTable(['Chore','Assigned To','Frequency','Due','Status','Reward'], choreRows) : '<p style="color:#6B7280;font-style:italic;">No chores assigned.</p>'}
+            </div>
+            <div class="section no-break"><h3>Home Maintenance Log</h3>
+              ${maintRows.length ? buildPDFTable(['Task','Area','Frequency','Last Done','Next Due','Provider'], maintRows) : '<p style="color:#6B7280;font-style:italic;">No maintenance tasks.</p>'}
+            </div>
+            ${invLowRows.length ? `
+            <div class="section no-break"><h3>🚨 Low Stock Items (Reorder Needed)</h3>
+              ${buildPDFTable(['Item','Category','Current Qty','Min Qty','Location'], invLowRows)}
+            </div>` : ''}`;
+            openPDFWindow(html, `Home-Management-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Kids & School Report ---- */
+        function exportKidsPDF() {
+            const kids = appData.kids || [];
+            const schoolItems = appData.schoolItems || [];
+            const appts = (appData.appointments || []).filter(a => a.category === 'Medical' || a.category === 'Dental' || a.category === 'School');
+
+            let kidsHTML = '';
+            kids.forEach(k => {
+                kidsHTML += `
+                <div class="no-break" style="background:#F5F3FF;border:1.5px solid #C4B5FD;border-radius:12px;padding:14px 16px;margin-bottom:14px;">
+                  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                    <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#A855F7);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:18px;">${(k.name||'?').charAt(0)}</div>
+                    <div><div style="font-size:15px;font-weight:800;color:#111827;">${k.name}</div><div style="font-size:11px;color:#6B7280;">${k.grade||''} • ${k.school||''}</div></div>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:11px;color:#374151;">
+                    <div><strong>Teacher:</strong> ${k.teacher||'—'}</div><div><strong>Doctor:</strong> ${k.doctor||'—'}</div>
+                    <div><strong>Activities:</strong> ${k.activities||'—'}</div><div><strong>Allergies/Notes:</strong> ${k.notes||'None'}</div>
+                    <div><strong>Shoe Size:</strong> ${k.shoeSize||'—'}</div><div><strong>Clothing:</strong> ${k.clothingSize||'—'}</div>
+                  </div>
+                </div>`;
+            });
+
+            const schoolRows = schoolItems.map(s => [
+                s.title, s.child||'—', s.subject||'—', s.type||'—', s.dueDate||'—', buildStatusBadge(s.status||'To Do')
+            ]);
+            const apptRows = appts.map(a => [a.title, a.person||'—', a.date||'—', a.time||'—', a.location||'—']);
+
+            const html = `
+            ${buildPDFHeader('Kids & School Organizer', `${kids.length} Children • ${schoolItems.length} Assignments`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Children', kids.length, '👧', '#8B5CF6')}
+              ${buildInfographicKPI('Assignments', schoolItems.length, '📚', '#0EA5E9')}
+              ${buildInfographicKPI('Pending', schoolItems.filter(s => s.status !== 'Completed' && s.status !== 'Done').length, '⏳', '#F59E0B')}
+              ${buildInfographicKPI('Kids Appts', appts.length, '🏥', '#EF4444')}
+            </div>
+            <div class="section"><h3>Children Profiles</h3>${kidsHTML || '<p style="color:#6B7280;font-style:italic;">No children added.</p>'}</div>
+            <div class="section no-break"><h3>School Assignments & Deadlines</h3>
+              ${schoolRows.length ? buildPDFTable(['Assignment','Child','Subject','Type','Due Date','Status'], schoolRows) : '<p style="color:#6B7280;font-style:italic;">No school items.</p>'}
+            </div>
+            ${apptRows.length ? `<div class="section no-break"><h3>Kids Appointments</h3>
+              ${buildPDFTable(['Title','Person','Date','Time','Location'], apptRows)}
+            </div>` : ''}`;
+            openPDFWindow(html, `Kids-School-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Wellness Report ---- */
+        function exportWellnessPDF() {
+            const logs = (appData.wellnessLogs || []).slice(0, 60);
+            const habits = appData.habits || [];
+            const goals = appData.goals || [];
+            const today = new Date().toISOString().split('T')[0];
+
+            const avgWater = logs.length > 0 ? (logs.reduce((s,l) => s+(parseFloat(l.waterGlasses||l.water)||0), 0)/logs.length).toFixed(1) : 0;
+            const avgSleep = logs.length > 0 ? (logs.reduce((s,l) => s+(parseFloat(l.sleepHours||l.sleep)||0), 0)/logs.length).toFixed(1) : 0;
+            const habitsDoneToday = habits.filter(h => (h.history||[]).includes(today)).length;
+
+            const wellRows = logs.map(l => [
+                l.date||'—', l.mood||'—',
+                `⭐`.repeat(Math.max(0, Math.min(5, parseInt(l.energy)||0))),
+                (l.waterGlasses||l.water||0)+' 💧',
+                (l.sleepHours||l.sleep||0)+'h',
+                (l.movementMinutes||l.exercise||0)+' min',
+                l.notes||'—'
+            ]);
+            const habitRows = habits.map(h => {
+                const pct = h.history && h.history.length > 0 ? Math.min(100, h.history.length) + ' days' : '0 days';
+                const doneToday = (h.history||[]).includes(today) ? '✅' : '⬜';
+                return [h.name, h.category||'—', h.frequency||'Daily', pct, doneToday];
+            });
+            const goalRows = goals.map(g => [
+                g.title||g.name, g.category||'—', g.deadline||'—', buildStatusBadge(g.status||'In Progress'), g.progress||'—'
+            ]);
+
+            const html = `
+            ${buildPDFHeader('Wellness & Habits Report', `${MOM_NAME()} — Personal Health & Growth`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Wellness Logs', logs.length, '💚', '#10B981')}
+              ${buildInfographicKPI('Habits Tracked', habits.length, '🔁', '#8B5CF6')}
+              ${buildInfographicKPI('Done Today', habitsDoneToday + '/' + habits.length, '⚡', '#F59E0B')}
+              ${buildInfographicKPI('Avg Sleep', avgSleep + 'h', '😴', '#6366F1')}
+            </div>
+            <div class="section no-break"><h3>Habit Tracker</h3>
+              ${habitRows.length ? buildPDFTable(['Habit','Category','Frequency','Total Days','Today'], habitRows) : '<p style="color:#6B7280;font-style:italic;">No habits tracked.</p>'}
+            </div>
+            <div class="section no-break"><h3>Goals & Milestones</h3>
+              ${goalRows.length ? buildPDFTable(['Goal','Category','Deadline','Status','Progress'], goalRows) : '<p style="color:#6B7280;font-style:italic;">No goals set.</p>'}
+            </div>
+            <div class="page-break"></div>
+            <div class="section no-break"><h3>Wellness Log (Last 60 Days)</h3>
+              ${wellRows.length ? buildPDFTable(['Date','Mood','Energy','Water','Sleep','Exercise','Notes'], wellRows) : '<p style="color:#6B7280;font-style:italic;">No wellness data logged.</p>'}
+            </div>`;
+            openPDFWindow(html, `Wellness-Report-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Emergency & Contacts ---- */
+        function exportContactsPDF() {
+            const emergency = appData.emergencyContacts || [];
+            const contacts = appData.contacts || [];
+            const family = appData.family || [];
+
+            const emergencyHTML = emergency.map(e => `
+            <div class="no-break" style="background:#FEF2F2;border:1.5px solid #FCA5A5;border-radius:10px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:flex-start;gap:12px;">
+              <div style="font-size:24px;flex-shrink:0;">🚨</div>
+              <div>
+                <div style="font-size:13px;font-weight:800;color:#111827;">${e.name}</div>
+                <div style="font-size:11px;color:#6B7280;margin-bottom:4px;">${e.relationship||''}</div>
+                <div style="font-size:14px;font-weight:900;color:#DC2626;">📞 ${e.phone}</div>
+                ${e.altPhone ? `<div style="font-size:11px;color:#374151;">Alt: ${e.altPhone}</div>` : ''}
+                ${e.notes ? `<div style="font-size:11px;color:#6B7280;font-style:italic;margin-top:4px;">${e.notes}</div>` : ''}
+              </div>
+            </div>`).join('');
+
+            const contactRows = contacts.map(c => [c.name, c.relationship||'—', c.phone||'—', c.email||'—', c.address||'—']);
+            const familyRows = family.map(m => [m.name, m.role||'—', m.birthday||'—', m.phone||'—', m.email||'—', m.notes||'—']);
+
+            const html = `
+            ${buildPDFHeader('Emergency & Contact Directory', `${family.length} Family Members • ${emergency.length} Emergency Contacts`)}
+            <div class="section"><h3>🚨 Emergency Contacts — Print & Keep Handy</h3>
+              ${emergencyHTML || '<p style="color:#6B7280;font-style:italic;">No emergency contacts added.</p>'}
+            </div>
+            <div class="section no-break"><h3>Family Roster</h3>
+              ${familyRows.length ? buildPDFTable(['Name','Role','Birthday','Phone','Email','Notes'], familyRows) : '<p style="color:#6B7280;font-style:italic;">No family members added.</p>'}
+            </div>
+            <div class="page-break"></div>
+            <div class="section no-break"><h3>Address Book & Directory</h3>
+              ${contactRows.length ? buildPDFTable(['Name','Relationship','Phone','Email','Address'], contactRows) : '<p style="color:#6B7280;font-style:italic;">No contacts added.</p>'}
+            </div>`;
+            openPDFWindow(html, `Emergency-Contacts-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Meal Planner ---- */
+        function exportMealPlannerPDF() {
+            const meals = appData.meals || {};
+            const recipes = appData.recipes || [];
+            const days = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+            const mealTypes = {b:'Breakfast', l:'Lunch', d:'Dinner', s:'Snack'};
+            const dayColors = ['#FDF4FF','#FFF0F9','#F0F9FF','#FFFBEB','#F0FDF4','#FFF7ED','#EFF6FF'];
+
+            let mealHTML = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:20px;">`;
+            days.forEach((day, i) => {
+                const dm = meals[day] || {};
+                mealHTML += `<div style="background:${dayColors[i]};border-radius:10px;padding:10px 8px;border:1px solid #E5E7EB;">
+                  <div style="font-weight:900;font-size:11px;text-transform:uppercase;color:#374151;margin-bottom:6px;">${day.charAt(0).toUpperCase()+day.slice(1,3)}</div>
+                  ${Object.entries(mealTypes).map(([k,label]) => dm[k] ? `<div style="margin-bottom:4px;"><span style="font-size:9px;font-weight:700;color:#6B7280;">${label[0]}</span> <span style="font-size:10px;color:#1F2937;">${dm[k]}</span></div>` : '').join('')}
+                  ${!Object.values(dm).some(Boolean) ? '<span style="font-size:10px;color:#9CA3AF;font-style:italic;">Not planned</span>' : ''}
+                </div>`;
+            });
+            mealHTML += '</div>';
+
+            const recipeRows = recipes.map(r => [r.name, r.category||'—', r.servings||'—', r.prepTime||'—', r.cookTime||'—']);
+
+            const html = `
+            ${buildPDFHeader('Weekly Meal Planner', `7-Day Family Menu • ${FAMILY_NAME()}`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Days Planned', days.filter(d => meals[d] && Object.values(meals[d]).some(Boolean)).length, '🍽️', '#F97316')}
+              ${buildInfographicKPI('Recipes Saved', recipes.length, '📖', '#8B5CF6')}
+              ${buildInfographicKPI('Grocery Items', (appData.groceries||[]).length, '🛒', '#10B981')}
+              ${buildInfographicKPI('Pantry Items', (appData.pantry||[]).length, '🥫', '#F59E0B')}
+            </div>
+            <div class="section"><h3>This Week's Meal Plan</h3>${mealHTML}</div>
+            ${recipeRows.length ? `<div class="section no-break"><h3>Recipe Collection</h3>${buildPDFTable(['Recipe Name','Category','Servings','Prep Time','Cook Time'], recipeRows)}</div>` : ''}`;
+            openPDFWindow(html, `Meal-Planner-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ---- PDF: Full Family Organizer (Master Report) ---- */
+        function exportFullPDF() {
+            const tasks = appData.tasks || [];
+            const events = appData.events || [];
+            const appts = appData.appointments || [];
+            const expenses = appData.expenses || [];
+            const habits = appData.habits || [];
+            const kids = appData.kids || [];
+            const sym = (appData.settings && appData.settings.currency) || '$';
+
+            const done = tasks.filter(t => t.status === 'Completed').length;
+            const totalExp = expenses.reduce((s,e) => s+(parseFloat(e.amount)||0), 0);
+            const income = appData.monthlyIncome || 0;
+            const today = new Date().toISOString().split('T')[0];
+            const habitsDoneToday = habits.filter(h => (h.history||[]).includes(today)).length;
+
+            const urgentTasks = tasks.filter(t => (t.priority === 'Urgent' || t.priority === 'High') && t.status !== 'Completed').slice(0,10);
+            const upcomingEvents = [...events, ...appts].filter(e => (e.date||e.date) >= today).sort((a,b) => (a.date||'').localeCompare(b.date||'')).slice(0,10);
+
+            const urgentRows = urgentTasks.map(t => [t.title, buildStatusBadge(t.priority), t.dueDate||'—', t.assignee||'—']);
+            const upcomingRows = upcomingEvents.map(e => [e.title, e.date||'—', e.time||e.startTime||'—', e.person||e.member||'—', e.location||'—']);
+
+            const html = `
+            ${buildPDFHeader('Complete Family Organizer Summary', `${FAMILY_NAME()} — Full Overview`)}
+            <div class="kpi-grid">
+              ${buildInfographicKPI('Tasks Done', done+'/'+tasks.length, '✅', '#10B981')}
+              ${buildInfographicKPI('Monthly Spend', sym+totalExp.toFixed(0), '💸', '#EF4444')}
+              ${buildInfographicKPI('Habits Today', habitsDoneToday+'/'+habits.length, '🔁', '#8B5CF6')}
+              ${buildInfographicKPI('Kids', kids.length, '👧', '#F59E0B')}
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+              <div class="no-break" style="background:#F0FDF4;border:1.5px solid #86EFAC;border-radius:12px;padding:14px;">
+                <h3 style="color:#15803D;margin:0 0 8px;">Budget Overview</h3>
+                <div style="font-size:12px;display:flex;flex-direction:column;gap:4px;">
+                  <div>Monthly Income: <strong>${sym}${income.toLocaleString()}</strong></div>
+                  <div>Total Expenses: <strong style="color:#DC2626;">${sym}${totalExp.toFixed(0)}</strong></div>
+                  <div>Net Balance: <strong style="color:${income - totalExp >= 0 ? '#15803D' : '#DC2626'};">${sym}${(income - totalExp).toFixed(0)}</strong></div>
+                </div>
+              </div>
+              <div class="no-break" style="background:#EFF6FF;border:1.5px solid #BFDBFE;border-radius:12px;padding:14px;">
+                <h3 style="color:#1D4ED8;margin:0 0 8px;">Family at a Glance</h3>
+                <div style="font-size:12px;display:flex;flex-direction:column;gap:4px;">
+                  <div>Family Members: <strong>${(appData.family||[]).length}</strong></div>
+                  <div>Upcoming Events: <strong>${events.filter(e => e.date >= today).length}</strong></div>
+                  <div>Appointments: <strong>${appts.filter(a => a.date >= today).length}</strong></div>
+                </div>
+              </div>
+            </div>
+            <div class="section no-break"><h3>🔥 Urgent & High Priority Tasks</h3>
+              ${urgentRows.length ? buildPDFTable(['Task','Priority','Due Date','Assignee'], urgentRows) : '<p style="color:#6B7280;font-style:italic;">No urgent tasks! Great job! 🎉</p>'}
+            </div>
+            <div class="section no-break"><h3>📅 Upcoming Schedule</h3>
+              ${upcomingRows.length ? buildPDFTable(['Title','Date','Time','Person','Location'], upcomingRows) : '<p style="color:#6B7280;font-style:italic;">No upcoming items scheduled.</p>'}
+            </div>`;
+            openPDFWindow(html, `Family-Organizer-Summary-${EXPORT_DATE()}.pdf`);
+        }
+
+        /* ============================================================
+           HTML LAYOUT PRINT — Prints the current view as-is
+        ============================================================ */
+        function printCurrentView() {
+            // Inject a branded print header temporarily
+            const workspace = document.getElementById('mainWorkspace');
+            if (!workspace) { window.print(); return; }
+
+            const name = FAMILY_NAME();
+            const mom = MOM_NAME();
+            const viewTitle = document.getElementById('pageTitle') ? document.getElementById('pageTitle').textContent : 'Report';
+            const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Create temporary print header
+            let header = document.getElementById('printHeader');
+            if (!header) {
+                header = document.createElement('div');
+                header.id = 'printHeader';
+                header.style.display = 'none'; // Hidden normally, shown via @media print
+                document.body.insertBefore(header, document.body.firstChild);
+            }
+            header.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#D946EF,#F43F5E);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;">💕</div>
+                <div>
+                  <div style="font-size:17px;font-weight:900;color:#111827;">${viewTitle}</div>
+                  <div style="font-size:11px;color:#6B7280;">${name} — ${mom}</div>
+                </div>
+              </div>
+              <div style="text-align:right;font-size:11px;color:#6B7280;">
+                <div style="font-weight:700;color:#374151;">Mom Life Organizer Pro</div>
+                <div>${date}</div>
+              </div>
+            </div>`;
+
+            window.print();
+            showToast('Printing current view... 🖨️', 'info');
+        }
+
+        /* ============================================================
+           SETTINGS VIEW — Export Hub Section
+           Safe wrap: runs after all function declarations are parsed
+        ============================================================ */
+        // We use a window.onload-safe wrapper that augments the existing renderSettingsView
+        (function() {
+            const _origRSV = renderSettingsView;
+            window._exportHubRenderSettingsView = function(container) {
+                _origRSV(container);
+
+                // Append Export Hub after existing content
+                const exportHub = document.createElement('div');
+                exportHub.style.marginTop = '24px';
+                exportHub.innerHTML = `
+                <div class="card" style="margin-bottom: 20px;">
+                  <div class="card-header">
+                    <div class="card-title-group">
+                      <div class="card-icon" style="background: #FEF2F2; color: #DC2626;">📤</div>
+                      <div>
+                        <div class="card-title">Export Hub — CSV, PDF & Print</div>
+                        <div class="card-subtitle">Export any section as CSV or a beautiful infographic PDF</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="margin-bottom: 20px;">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">📊 CSV Data Exports</div>
+                    <div class="export-hub-grid">
+                      <div class="export-card" onclick="exportTasksCSV()">
+                        <div class="export-card-icon" style="background:#EEF2FF;">📋</div>
+                        <div class="export-card-title">Tasks</div>
+                        <div class="export-card-desc">${(appData.tasks||[]).length} tasks with status, priority & dates</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportExpensesCSV()">
+                        <div class="export-card-icon" style="background:#ECFDF5;">💸</div>
+                        <div class="export-card-title">Expenses</div>
+                        <div class="export-card-desc">${(appData.expenses||[]).length} expense entries with categories</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportBillsCSV()">
+                        <div class="export-card-icon" style="background:#FFFBEB;">🧾</div>
+                        <div class="export-card-title">Bills</div>
+                        <div class="export-card-desc">${(appData.bills||[]).length} bills with due dates & status</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportSubscriptionsCSV()">
+                        <div class="export-card-icon" style="background:#FDF4FF;">📱</div>
+                        <div class="export-card-title">Subscriptions</div>
+                        <div class="export-card-desc">${(appData.subscriptions||[]).length} subscriptions & billing cycles</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportSavingsCSV()">
+                        <div class="export-card-icon" style="background:#F0FDF4;">🏦</div>
+                        <div class="export-card-title">Savings Goals</div>
+                        <div class="export-card-desc">${(appData.savings||[]).length} savings goals with progress</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportGroceriesCSV()">
+                        <div class="export-card-icon" style="background:#FFF7ED;">🛒</div>
+                        <div class="export-card-title">Grocery List</div>
+                        <div class="export-card-desc">${(appData.groceries||[]).length} grocery items</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportPantryCSV()">
+                        <div class="export-card-icon" style="background:#F0FDFA;">🥫</div>
+                        <div class="export-card-title">Pantry</div>
+                        <div class="export-card-desc">${(appData.pantry||[]).length} pantry items & expiry dates</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportAppointmentsCSV()">
+                        <div class="export-card-icon" style="background:#FFFBEB;">🏥</div>
+                        <div class="export-card-title">Appointments</div>
+                        <div class="export-card-desc">${(appData.appointments||[]).length} medical & school appointments</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportEventsCSV()">
+                        <div class="export-card-icon" style="background:#EEF2FF;">📅</div>
+                        <div class="export-card-title">Family Events</div>
+                        <div class="export-card-desc">${(appData.events||[]).length} events & activities</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportBirthdaysCSV()">
+                        <div class="export-card-icon" style="background:#FDF4FF;">🎂</div>
+                        <div class="export-card-title">Birthdays</div>
+                        <div class="export-card-desc">${(appData.birthdays||[]).length} birthdays & gift ideas</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportContactsCSV()">
+                        <div class="export-card-icon" style="background:#EFF6FF;">📇</div>
+                        <div class="export-card-title">Contacts</div>
+                        <div class="export-card-desc">${(appData.contacts||[]).length} contacts & addresses</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportHabitsCSV()">
+                        <div class="export-card-icon" style="background:#FDF4FF;">🔁</div>
+                        <div class="export-card-title">Habits</div>
+                        <div class="export-card-desc">${(appData.habits||[]).length} habits & streak data</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportGoalsCSV()">
+                        <div class="export-card-icon" style="background:#EEF2FF;">🎯</div>
+                        <div class="export-card-title">Goals</div>
+                        <div class="export-card-desc">${(appData.goals||[]).length} goals & milestones</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportChoresCSV()">
+                        <div class="export-card-icon" style="background:#F0FDFA;">🏠</div>
+                        <div class="export-card-title">Chores</div>
+                        <div class="export-card-desc">${(appData.chores||[]).length} family chore assignments</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportCleaningCSV()">
+                        <div class="export-card-icon" style="background:#ECFEFF;">🧹</div>
+                        <div class="export-card-title">Cleaning</div>
+                        <div class="export-card-desc">${(appData.cleaning||[]).length} cleaning tasks & schedules</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportInventoryCSV()">
+                        <div class="export-card-icon" style="background:#FFF7ED;">📦</div>
+                        <div class="export-card-title">Inventory</div>
+                        <div class="export-card-desc">${(appData.inventory||[]).length} household supply items</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportMaintenanceCSV()">
+                        <div class="export-card-icon" style="background:#FFFBEB;">🔧</div>
+                        <div class="export-card-title">Maintenance</div>
+                        <div class="export-card-desc">${(appData.maintenance||[]).length} home maintenance tasks</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportSchoolCSV()">
+                        <div class="export-card-icon" style="background:#EFF6FF;">📚</div>
+                        <div class="export-card-title">School Planner</div>
+                        <div class="export-card-desc">${(appData.schoolItems||[]).length} assignments & school items</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                      <div class="export-card" onclick="exportWellnessCSV()">
+                        <div class="export-card-icon" style="background:#F0FDF4;">💚</div>
+                        <div class="export-card-title">Wellness Log</div>
+                        <div class="export-card-desc">${(appData.wellnessLogs||[]).length} wellness & mood logs</div>
+                        <span class="export-card-type export-type-csv">⬇ CSV</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-bottom: 20px;">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">📄 Infographic PDF Reports</div>
+                    <div class="export-hub-grid">
+                      <div class="export-card" onclick="exportFullPDF()">
+                        <div class="export-card-icon" style="background:linear-gradient(135deg,#FDF4FF,#FEF2F2);">💕</div>
+                        <div class="export-card-title">Full Family Summary</div>
+                        <div class="export-card-desc">Complete multi-page overview of your entire organizer</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportTasksPDF()">
+                        <div class="export-card-icon" style="background:#EEF2FF;">📋</div>
+                        <div class="export-card-title">Tasks Report</div>
+                        <div class="export-card-desc">All tasks with KPIs, status & priority infographics</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportFinancialPDF()">
+                        <div class="export-card-icon" style="background:#ECFDF5;">💰</div>
+                        <div class="export-card-title">Financial Report</div>
+                        <div class="export-card-desc">Expenses, bills, subscriptions & savings — multi-page</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportSchedulePDF()">
+                        <div class="export-card-icon" style="background:#EEF2FF;">📅</div>
+                        <div class="export-card-title">Family Schedule</div>
+                        <div class="export-card-desc">All events, appointments & tasks — chronological</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportGroceryPDF()">
+                        <div class="export-card-icon" style="background:#FFF7ED;">🛒</div>
+                        <div class="export-card-title">Grocery & Pantry</div>
+                        <div class="export-card-desc">Shopping list grouped by category + pantry stock</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportMealPlannerPDF()">
+                        <div class="export-card-icon" style="background:#FFF7ED;">🍽️</div>
+                        <div class="export-card-title">Meal Planner</div>
+                        <div class="export-card-desc">Weekly meal plan + recipe collection</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportKidsPDF()">
+                        <div class="export-card-icon" style="background:#F5F3FF;">👧</div>
+                        <div class="export-card-title">Kids & School</div>
+                        <div class="export-card-desc">Child profiles, assignments & medical appointments</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportWellnessPDF()">
+                        <div class="export-card-icon" style="background:#F0FDF4;">💚</div>
+                        <div class="export-card-title">Wellness Report</div>
+                        <div class="export-card-desc">Habits, goals & wellness log — multi-page</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportHomePDF()">
+                        <div class="export-card-icon" style="background:#F0FDFA;">🏠</div>
+                        <div class="export-card-title">Home Report</div>
+                        <div class="export-card-desc">Cleaning, chores, maintenance & inventory</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                      <div class="export-card" onclick="exportContactsPDF()">
+                        <div class="export-card-icon" style="background:#FEF2F2;">🚨</div>
+                        <div class="export-card-title">Emergency & Contacts</div>
+                        <div class="export-card-desc">Emergency numbers, family roster & address book</div>
+                        <span class="export-card-type export-type-pdf">📄 PDF</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 12px;">🖨️ HTML Layout Print</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                      <div class="export-card" onclick="printCurrentView()">
+                        <div class="export-card-icon" style="background:#EFF6FF;">🖨️</div>
+                        <div class="export-card-title">Print Current View</div>
+                        <div class="export-card-desc">Prints exactly what you see on screen with branded header. Works with browser's "Save as PDF".</div>
+                        <span class="export-card-type export-type-print">🖨 Print</span>
+                      </div>
+                      <div class="export-card" onclick="exportCompleteJsonBackup()">
+                        <div class="export-card-icon" style="background:#F3F4F6;">💾</div>
+                        <div class="export-card-title">JSON Data Backup</div>
+                        <div class="export-card-desc">Complete JSON backup of all your organizer data. Use to restore or transfer.</div>
+                        <span class="export-card-type" style="background:#F3F4F6;color:#374151;">📦 JSON</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+
+                container.appendChild(exportHub);
+            };
+            // Replace global renderSettingsView with our augmented version
+            renderSettingsView = window._exportHubRenderSettingsView;
+        })();
 
     </script>
 </body>
