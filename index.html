@@ -5101,6 +5101,100 @@
                 .replace(/>/g, '&gt;');
         }
 
+        // Helper: Parse any time string into minutes from midnight (0 to 1439) for chronological morning-to-evening sorting
+        function parseTimeToMinutes(timeStr) {
+            if (!timeStr || typeof timeStr !== 'string') return 9999;
+            const s = timeStr.trim().toLowerCase();
+            if (!s) return 9999;
+            if (s === 'all day' || s === 'all-day' || s === 'anytime' || s === 'due today') {
+                return -1; // Place all-day entries at the very beginning of the day (top)
+            }
+
+            // 12-hour format with AM/PM: e.g. "07:00 AM", "7:30 pm", "12:15pm", "8:00am"
+            const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+            if (match12) {
+                let hours = parseInt(match12[1], 10);
+                const minutes = parseInt(match12[2], 10);
+                const period = match12[3].toLowerCase();
+                if (period === 'pm' && hours < 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            }
+
+            // Simple 12-hour format without minutes: e.g. "7 AM", "12 PM", "8pm"
+            const matchSimple12 = s.match(/^(\d{1,2})\s*(am|pm)$/i);
+            if (matchSimple12) {
+                let hours = parseInt(matchSimple12[1], 10);
+                const period = matchSimple12[2].toLowerCase();
+                if (period === 'pm' && hours < 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
+                return hours * 60;
+            }
+
+            // 24-hour format: e.g. "08:30", "15:00", "17:30", "0:15"
+            const match24 = s.match(/^(\d{1,2}):(\d{2})$/);
+            if (match24) {
+                const hours = parseInt(match24[1], 10);
+                const minutes = parseInt(match24[2], 10);
+                return hours * 60 + minutes;
+            }
+
+            // Fallback: search for any time pattern inside string
+            const fallbackMatch = s.match(/(\d{1,2}):(\d{2})(?:\s*(am|pm))?/i);
+            if (fallbackMatch) {
+                let hours = parseInt(fallbackMatch[1], 10);
+                const minutes = parseInt(fallbackMatch[2], 10);
+                const period = fallbackMatch[3] ? fallbackMatch[3].toLowerCase() : null;
+                if (period === 'pm' && hours < 12) hours += 12;
+                if (period === 'am' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            }
+
+            return 9999;
+        }
+
+        // Helper: Format time consistently for display (e.g. "15:00" -> "03:00 PM", "8:30" -> "08:30 AM")
+        function formatTimeDisplay(timeStr) {
+            if (!timeStr || typeof timeStr !== 'string') return 'All Day';
+            const s = timeStr.trim();
+            if (!s || s.toLowerCase() === 'all day' || s.toLowerCase() === 'due today') return 'All Day';
+
+            // 12-hour match: normalize to "HH:MM AM/PM"
+            const match12 = s.match(/^(\d{1,2}):(\d{2})\s*(am|pm)$/i);
+            if (match12) {
+                const h = match12[1].padStart(2, '0');
+                const m = match12[2];
+                const p = match12[3].toUpperCase();
+                return `${h}:${m} ${p}`;
+            }
+
+            // Simple 12-hour without minutes: "7 AM" -> "07:00 AM"
+            const matchSimple12 = s.match(/^(\d{1,2})\s*(am|pm)$/i);
+            if (matchSimple12) {
+                const h = matchSimple12[1].padStart(2, '0');
+                const p = matchSimple12[2].toUpperCase();
+                return `${h}:00 ${p}`;
+            }
+
+            // 24-hour match: convert to 12-hour AM/PM
+            const match24 = s.match(/^(\d{1,2}):(\d{2})$/);
+            if (match24) {
+                const hours = parseInt(match24[1], 10);
+                const mins = match24[2];
+                const period = hours >= 12 ? 'PM' : 'AM';
+                let h12 = hours % 12;
+                if (h12 === 0) h12 = 12;
+                return `${String(h12).padStart(2, '0')}:${mins} ${period}`;
+            }
+
+            return s;
+        }
+
+        // Helper: Compare two times chronologically (Morning -> Afternoon -> Evening)
+        function compareTimes(timeA, timeB) {
+            return parseTimeToMinutes(timeA) - parseTimeToMinutes(timeB);
+        }
+
         // Default Empty Data Schema
         function getDefaultData() {
             return {
@@ -6191,7 +6285,7 @@
             const habitsDoneToday = (appData.habits || []).filter(h => (h.history || []).includes(today)).length;
             const habitPct = totalHabits > 0 ? Math.round((habitsDoneToday / totalHabits) * 100) : 0;
 
-            // Group Today's Schedule chronologically
+            // Group Today's Schedule chronologically (Morning to Evening, Top to Bottom)
             const todaySchedule = [];
             (appData.dailyTimeBlocks || []).filter(tb => tb.date === today || (!tb.date && true)).forEach(tb => {
                 todaySchedule.push({ id: tb.id, entityType: 'timeblock', type: 'Time Block', time: tb.time, title: tb.title, subtitle: `${tb.category || 'Family'}${tb.person ? ' • ' + tb.person : ''}${tb.endTime ? ' (' + tb.endTime + ')' : ''}`, color: 'var(--primary)', icon: 'clock' });
@@ -6200,12 +6294,12 @@
                 todaySchedule.push({ id: a.id, entityType: 'appointment', type: 'Appointment', time: a.time, title: a.title, subtitle: `${a.person} • ${a.location || 'Local Clinic'}`, color: 'var(--color-appointments)', icon: 'clock' });
             });
             (appData.events || []).filter(e => e.date === today).forEach(e => {
-                todaySchedule.push({ id: e.id, entityType: 'event', type: 'Event', time: e.startTime, title: e.title, subtitle: `${e.member} • ${e.location || 'Location'}`, color: 'var(--color-family)', icon: 'calendar' });
+                todaySchedule.push({ id: e.id, entityType: 'event', type: 'Event', time: e.startTime || e.time, title: e.title, subtitle: `${e.member} • ${e.location || 'Location'}`, color: 'var(--color-family)', icon: 'calendar' });
             });
             tasksTodayList.forEach(t => {
                 todaySchedule.push({ id: t.id, entityType: 'task', type: 'Task', time: t.dueTime || 'All Day', title: t.title, subtitle: `${t.priority} priority • Assigned to ${t.assignee}`, color: 'var(--color-school)', icon: 'check-square', done: t.status === 'Completed' });
             });
-            todaySchedule.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+            todaySchedule.sort((a, b) => compareTimes(a.time, b.time) || (a.title || '').localeCompare(b.title || ''));
 
             // Category spending for Donut Chart (synchronized canonical categories including subscriptions)
             const spendingSlices = [];
@@ -6335,10 +6429,10 @@
                 </div>
               ` : todaySchedule.map(item => `
                 <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: var(--bg-subtle); border-radius: var(--border-radius-sm); border-left: 4px solid ${item.color};">
-                  <span style="font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: var(--text-secondary); min-width: 68px;">${item.time}</span>
+                  <span style="font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: var(--text-secondary); min-width: 74px;">${formatTimeDisplay(item.time)}</span>
                   <div style="flex: 1; min-width: 0;">
-                    <div style="font-weight: 600; font-size: 13.5px; color: var(--text-main); text-decoration: ${item.done ? 'line-through' : 'none'}; opacity: ${item.done ? '0.6' : '1'};">${item.title}</div>
-                    <div style="font-size: 11.5px; color: var(--text-muted);">${item.subtitle}</div>
+                    <div style="font-weight: 600; font-size: 13.5px; color: var(--text-main); text-decoration: ${item.done ? 'line-through' : 'none'}; opacity: ${item.done ? '0.6' : '1'};">${escapeHtml(item.title)}</div>
+                    <div style="font-size: 11.5px; color: var(--text-muted);">${escapeHtml(item.subtitle)}</div>
                   </div>
                   <div style="display: flex; align-items: center; gap: 4px;">
                     <button class="btn btn-ghost btn-sm" style="padding: 4px;" onclick="openEntityModal('${item.entityType}', '${item.id}')" title="Edit"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
@@ -6491,6 +6585,7 @@
             };
 
             const tasksToday = (appData.tasks || []).filter(t => t.dueDate === today);
+            tasksToday.sort((a, b) => compareTimes(a.dueTime, b.dueTime) || (a.title || '').localeCompare(b.title || ''));
             const apptsToday = (appData.appointments || []).filter(a => a.date === today);
             const eventsToday = (appData.events || []).filter(e => e.date === today);
             const timeBlocksToday = (appData.dailyTimeBlocks || []).filter(b => b.date === today || (!b.date && true));
@@ -6591,40 +6686,29 @@
               </div>
 
               <div style="display: flex; flex-direction: column; gap: 8px;">
-                ${apptsToday.length === 0 && eventsToday.length === 0 && timeBlocksToday.length === 0 ? `
-                  <div style="text-align: center; color: var(--text-muted); padding: 16px;">No appointments, events or time blocks today. Enjoy the open space!</div>
-                ` : [
-                    ...timeBlocksToday.map(tb => `
-                    <div style="padding: 10px 14px; background: var(--bg-subtle); border-radius: var(--border-radius-sm); border-left: 3px solid var(--primary); display: flex; justify-content: space-between; align-items: center;">
-                      <div><strong>${tb.time || '09:00 AM'}</strong> — ${escapeHtml(tb.title)} ${tb.person ? '(' + escapeHtml(tb.person) + ')' : ''}</div>
-                      <div style="display: flex; align-items: center; gap: 6px;">
-                        <span class="badge badge-today">Time Block</span>
-                        <button class="btn btn-ghost btn-sm" style="padding: 2px;" onclick="openEntityModal('timeblock', '${tb.id}')"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
-                        <button class="btn btn-ghost btn-sm" style="padding: 2px; color: var(--color-urgent);" onclick="deleteEntity('timeblock', '${tb.id}', '${escapeHtml(tb.title)}')"><svg class="icon icon-sm"><use href="#icon-trash-2"></use></svg></button>
-                      </div>
-                    </div>
-                  `),
-                    ...apptsToday.map(a => `
-                    <div style="padding: 10px 14px; background: var(--bg-subtle); border-radius: var(--border-radius-sm); border-left: 3px solid var(--color-urgent); display: flex; justify-content: space-between; align-items: center;">
-                      <div><strong>${a.time}</strong> — ${escapeHtml(a.title)} (${escapeHtml(a.person)})</div>
-                      <div style="display: flex; align-items: center; gap: 6px;">
-                        <span class="badge badge-today">Appointment</span>
-                        <button class="btn btn-ghost btn-sm" style="padding: 2px;" onclick="openEntityModal('appointment', '${a.id}')"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
-                        <button class="btn btn-ghost btn-sm" style="padding: 2px; color: var(--color-urgent);" onclick="deleteEntity('appointment', '${a.id}', '${escapeHtml(a.title)}')"><svg class="icon icon-sm"><use href="#icon-trash-2"></use></svg></button>
-                      </div>
-                    </div>
-                  `),
-                    ...eventsToday.map(e => `
-                    <div style="padding: 10px 14px; background: var(--bg-subtle); border-radius: var(--border-radius-sm); border-left: 3px solid var(--color-family); display: flex; justify-content: space-between; align-items: center;">
-                      <div><strong>${e.startTime || e.time || ''}</strong> — ${escapeHtml(e.title)} (${escapeHtml(e.member || '')})</div>
-                      <div style="display: flex; align-items: center; gap: 6px;">
-                        <span class="badge badge-upcoming">Event</span>
-                        <button class="btn btn-ghost btn-sm" style="padding: 2px;" onclick="openEntityModal('event', '${e.id}')"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
-                        <button class="btn btn-ghost btn-sm" style="padding: 2px; color: var(--color-urgent);" onclick="deleteEntity('event', '${e.id}', '${escapeHtml(e.title)}')"><svg class="icon icon-sm"><use href="#icon-trash-2"></use></svg></button>
-                      </div>
-                    </div>
-                  `)
-                ].join('')}
+                ${(() => {
+                    const scheduleTodayItems = [
+                        ...timeBlocksToday.map(tb => ({ id: tb.id, entityType: 'timeblock', time: tb.time || '09:00 AM', title: tb.title, detail: tb.person ? '(' + tb.person + ')' : '', badgeName: 'Time Block', badgeClass: 'badge-today', border: 'var(--primary)' })),
+                        ...apptsToday.map(a => ({ id: a.id, entityType: 'appointment', time: a.time, title: a.title, detail: '(' + a.person + ')', badgeName: 'Appointment', badgeClass: 'badge-today', border: 'var(--color-urgent)' })),
+                        ...eventsToday.map(e => ({ id: e.id, entityType: 'event', time: e.startTime || e.time || '', title: e.title, detail: e.member ? '(' + e.member + ')' : '', badgeName: 'Event', badgeClass: 'badge-upcoming', border: 'var(--color-family)' }))
+                    ];
+                    scheduleTodayItems.sort((a, b) => compareTimes(a.time, b.time) || (a.title || '').localeCompare(b.title || ''));
+
+                    if (scheduleTodayItems.length === 0) {
+                        return '<div style="text-align: center; color: var(--text-muted); padding: 16px;">No appointments, events or time blocks today. Enjoy the open space!</div>';
+                    }
+
+                    return scheduleTodayItems.map(item => `
+                        <div style="padding: 10px 14px; background: var(--bg-subtle); border-radius: var(--border-radius-sm); border-left: 3px solid ${item.border}; display: flex; justify-content: space-between; align-items: center;">
+                          <div><strong>${formatTimeDisplay(item.time)}</strong> — ${escapeHtml(item.title)} ${escapeHtml(item.detail)}</div>
+                          <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="badge ${item.badgeClass}">${item.badgeName}</span>
+                            <button class="btn btn-ghost btn-sm" style="padding: 2px;" onclick="openEntityModal('${item.entityType}', '${item.id}')"><svg class="icon icon-sm"><use href="#icon-edit-2"></use></svg></button>
+                            <button class="btn btn-ghost btn-sm" style="padding: 2px; color: var(--color-urgent);" onclick="deleteEntity('${item.entityType}', '${item.id}', '${escapeHtml(item.title)}')"><svg class="icon icon-sm"><use href="#icon-trash-2"></use></svg></button>
+                          </div>
+                        </div>
+                    `).join('');
+                })()}
               </div>
             </div>
 
@@ -7443,14 +7527,8 @@
                 }
             });
 
-            // Chronological sort
-            items.sort((a, b) => {
-                const timeA = (a.time || '').toLowerCase();
-                const timeB = (b.time || '').toLowerCase();
-                if (timeA === 'all day' && timeB !== 'all day') return -1;
-                if (timeB === 'all day' && timeA !== 'all day') return 1;
-                return timeA.localeCompare(timeB);
-            });
+            // Chronological sort (Morning -> Afternoon -> Evening)
+            items.sort((a, b) => compareTimes(a.time, b.time) || (a.title || '').localeCompare(b.title || ''));
 
             return items;
         }
@@ -8203,8 +8281,8 @@
                 });
             });
 
-            // Sort by start time chronologically
-            list.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+            // Sort by start time chronologically (Morning -> Afternoon -> Evening)
+            list.sort((a, b) => compareTimes(a.time, b.time) || (a.title || '').localeCompare(b.title || ''));
             return list;
         }
 
@@ -8549,7 +8627,7 @@
                             });
                         });
                     });
-                    dayItems.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+                    dayItems.sort((a, b) => compareTimes(a.time, b.time) || (a.title || '').localeCompare(b.title || ''));
 
                     return `
                 <div class="agenda-day-card ${day.isToday ? 'today' : ''}">
@@ -8635,7 +8713,7 @@
                             });
                         });
                     });
-                    memWeekItems.sort((a, b) => a.dayInfo.iso.localeCompare(b.dayInfo.iso) || (a.time || '').localeCompare(b.time || ''));
+                    memWeekItems.sort((a, b) => a.dayInfo.iso.localeCompare(b.dayInfo.iso) || compareTimes(a.time, b.time) || (a.title || '').localeCompare(b.title || ''));
 
                     return `
                 <div class="card" style="border-top: 4px solid ${mem.color || 'var(--primary)'}; display: flex; flex-direction: column; height: 100%;">
@@ -9745,6 +9823,7 @@
         let activeMoneyMonth = new Date().toISOString().slice(0, 7); // e.g., "2026-09"
         let expenseFilterScope = 'month'; // 'month' or 'all'
         let expenseFilterCategory = 'all';
+        let expenseSearchQuery = '';
 
         function setMoneyMonth(monthStr) {
             if (monthStr && /^\d{4}-\d{2}$/.test(monthStr)) {
@@ -10150,7 +10229,8 @@
         }
 
         // 1. Financial Dashboard View
-        function renderFinancialDashboardView(container = document.getElementById('viewContainer')) {
+        function renderFinancialDashboardView(container = document.getElementById('mainWorkspace')) {
+            if (!container) container = document.getElementById('mainWorkspace');
             if (!container) return;
             const summary = getMonthlyFinancialSummary(activeMoneyMonth);
             const monthExpenses = getMonthExpenses(activeMoneyMonth);
@@ -10387,7 +10467,8 @@
         }
 
         // 2. Budget Planner View
-        function renderBudgetView(container = document.getElementById('viewContainer')) {
+        function renderBudgetView(container = document.getElementById('mainWorkspace')) {
+            if (!container) container = document.getElementById('mainWorkspace');
             if (!container) return;
             const summary = getMonthlyFinancialSummary(activeMoneyMonth);
             const budgetMap = summary.budgetMap;
@@ -10491,25 +10572,58 @@
         // 3. Expense Tracker View
         function setExpenseFilterScope(scope) {
             expenseFilterScope = scope;
-            renderExpensesView(document.getElementById('viewContainer'));
+            renderExpensesView();
         }
 
         function setExpenseFilterCategory(cat) {
             expenseFilterCategory = cat;
-            renderExpensesView(document.getElementById('viewContainer'));
+            renderExpensesView();
         }
 
-        function renderExpensesView(container = document.getElementById('viewContainer')) {
+        function setExpenseSearch(query) {
+            expenseSearchQuery = query || '';
+            renderExpensesView();
+            const input = document.getElementById('expenseSearchInput');
+            if (input) {
+                input.focus();
+                input.setSelectionRange(input.value.length, input.value.length);
+            }
+        }
+
+        function clearExpenseFilters() {
+            expenseFilterScope = 'month';
+            expenseFilterCategory = 'all';
+            expenseSearchQuery = '';
+            renderExpensesView();
+        }
+
+        function renderExpensesView(container = document.getElementById('mainWorkspace')) {
+            if (!container) container = document.getElementById('mainWorkspace');
             if (!container) return;
             const allExpenses = appData.expenses || [];
             const isMonthScope = expenseFilterScope === 'month';
-            let filteredExpenses = isMonthScope ? getMonthExpenses(activeMoneyMonth) : allExpenses;
+            let filteredExpenses = isMonthScope ? getMonthExpenses(activeMoneyMonth) : [...allExpenses];
 
             if (expenseFilterCategory !== 'all') {
                 filteredExpenses = filteredExpenses.filter(e => normalizeMoneyCategory(e.category) === expenseFilterCategory);
             }
 
+            if (typeof expenseSearchQuery !== 'undefined' && expenseSearchQuery.trim()) {
+                const q = expenseSearchQuery.trim().toLowerCase();
+                filteredExpenses = filteredExpenses.filter(e =>
+                    (e.description && e.description.toLowerCase().includes(q)) ||
+                    (e.notes && e.notes.toLowerCase().includes(q)) ||
+                    (e.payment && e.payment.toLowerCase().includes(q)) ||
+                    (e.category && e.category.toLowerCase().includes(q))
+                );
+            }
+
+            // Always sort by date descending (newest first)
+            filteredExpenses.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
             const totalFilteredAmount = filteredExpenses.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+            const monthExpensesCount = getMonthExpenses(activeMoneyMonth).length;
+            const hasActiveFilters = expenseFilterCategory !== 'all' || (typeof expenseSearchQuery !== 'undefined' && expenseSearchQuery.trim()) || !isMonthScope;
 
             container.innerHTML = `
         ${renderMoneyNavHeader(
@@ -10531,7 +10645,7 @@
           <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
             <div style="display: inline-flex; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--border-radius-md); padding: 2px;">
               <button class="btn btn-sm ${isMonthScope ? 'btn-primary' : 'btn-ghost'}" style="border: none; padding: 4px 12px; font-size: 12px;" onclick="setExpenseFilterScope('month')">
-                ${formatMoneyMonthName(activeMoneyMonth)} (${getMonthExpenses(activeMoneyMonth).length})
+                ${formatMoneyMonthName(activeMoneyMonth)} (${monthExpensesCount})
               </button>
               <button class="btn btn-sm ${!isMonthScope ? 'btn-primary' : 'btn-ghost'}" style="border: none; padding: 4px 12px; font-size: 12px;" onclick="setExpenseFilterScope('all')">
                 All Time (${allExpenses.length})
@@ -10544,9 +10658,20 @@
                 <option value="${escapeHtml(c)}" ${expenseFilterCategory === c ? 'selected' : ''}>${escapeHtml(c)}</option>
               `).join('')}
             </select>
+
+            <div style="position: relative; display: inline-flex; align-items: center;">
+              <input type="text" id="expenseSearchInput" class="form-control" placeholder="Search expenses..." value="${escapeHtml(expenseSearchQuery || '')}" oninput="setExpenseSearch(this.value)" style="width: 190px; height: 32px; font-size: 12px; padding: 4px 8px 4px 28px;">
+              <svg class="icon icon-sm" style="position: absolute; left: 8px; pointer-events: none; opacity: 0.5;"><use href="#icon-search"></use></svg>
+            </div>
+
+            ${hasActiveFilters ? `
+              <button class="btn btn-ghost btn-sm" style="padding: 4px 8px; font-size: 11.5px; color: var(--color-urgent); display: inline-flex; align-items: center; gap: 4px;" onclick="clearExpenseFilters()" title="Reset all filters">
+                <svg class="icon icon-sm"><use href="#icon-x"></use></svg> Clear
+              </button>
+            ` : ''}
           </div>
 
-          <div style="font-size: 13px; color: var(--text-secondary);">
+          <div id="expenseStatsSummary" style="font-size: 13px; color: var(--text-secondary);">
             Showing <strong>${filteredExpenses.length}</strong> transactions • Total: <strong style="font-family: var(--font-mono); color: var(--text-main); font-size: 15px;">${formatCurrency(totalFilteredAmount)}</strong>
           </div>
         </div>
@@ -10567,7 +10692,7 @@
               ${filteredExpenses.length === 0 ? `
                 <tr>
                   <td colspan="6" style="text-align: center; padding: 36px 16px; color: var(--text-muted);">
-                    No expenses match the current filter. Click "+ Add Expense" to record a purchase.
+                    ${hasActiveFilters ? `No expenses match the current filter. <button class="btn btn-ghost btn-sm" style="color: var(--primary); text-decoration: underline; margin-left: 4px; padding: 0 4px;" onclick="clearExpenseFilters()">Clear filters</button>` : `No expenses recorded for this period. Click "+ Add Expense" to record a purchase.`}
                   </td>
                 </tr>
               ` : filteredExpenses.map(e => {
@@ -10621,6 +10746,15 @@
             if (expenseFilterCategory !== 'all') {
                 expensesToExport = expensesToExport.filter(e => normalizeMoneyCategory(e.category) === expenseFilterCategory);
             }
+            if (typeof expenseSearchQuery !== 'undefined' && expenseSearchQuery.trim()) {
+                const q = expenseSearchQuery.trim().toLowerCase();
+                expensesToExport = expensesToExport.filter(e =>
+                    (e.description && e.description.toLowerCase().includes(q)) ||
+                    (e.notes && e.notes.toLowerCase().includes(q)) ||
+                    (e.payment && e.payment.toLowerCase().includes(q)) ||
+                    (e.category && e.category.toLowerCase().includes(q))
+                );
+            }
             expensesToExport.forEach(e => {
                 const cat = normalizeMoneyCategory(e.category);
                 const linked = e.billId ? 'Bill' : e.savingsId ? 'Savings' : 'Direct';
@@ -10631,7 +10765,8 @@
         }
 
         // 4. Bills & Utilities View
-        function renderBillsView(container = document.getElementById('viewContainer')) {
+        function renderBillsView(container = document.getElementById('mainWorkspace')) {
+            if (!container) container = document.getElementById('mainWorkspace');
             if (!container) return;
             const bills = appData.bills || [];
             const summary = getMonthlyBillsSummary(activeMoneyMonth);
@@ -10795,7 +10930,8 @@
         }
 
         // 5. Subscription Tracker View
-        function renderSubscriptionsView(container = document.getElementById('viewContainer')) {
+        function renderSubscriptionsView(container = document.getElementById('mainWorkspace')) {
+            if (!container) container = document.getElementById('mainWorkspace');
             if (!container) return;
             const subs = appData.subscriptions || [];
             const monthlyTotal = getMonthlySubscriptionTotal();
@@ -10904,7 +11040,8 @@
         }
 
         // 6. Savings Goals View
-        function renderSavingsView(container = document.getElementById('viewContainer')) {
+        function renderSavingsView(container = document.getElementById('mainWorkspace')) {
+            if (!container) container = document.getElementById('mainWorkspace');
             if (!container) return;
             const savings = appData.savings || [];
             const totalSaved = savings.reduce((sum, s) => sum + (parseFloat(s.current) || 0), 0);
@@ -12603,6 +12740,9 @@
           </div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-control" name="dueDate" value="${v.dueDate || todayStr}"></div>
+            <div class="form-group"><label class="form-label">Due Time (Optional)</label><input type="time" class="form-control" name="dueTime" value="${v.dueTime || ''}"></div>
+          </div>
+          <div class="form-row">
             <div class="form-group"><label class="form-label">Assignee</label><select class="form-control" name="assignee">${(appData.family || [{ name: 'Mom' }, { name: 'Dad' }]).map(f => `<option ${v.assignee === f.name ? 'selected' : ''}>${f.name}</option>`).join('')}</select></div>
           </div>
           <div class="form-group"><label class="form-label">Notes & Details</label><textarea class="form-control" name="notes" placeholder="Additional details, store address, items needed...">${escapeHtml(v.notes || '')}</textarea></div>
@@ -13256,6 +13396,7 @@
                         priority: data.priority || 'Medium',
                         category: data.category || 'Home',
                         dueDate: data.dueDate,
+                        dueTime: data.dueTime || '',
                         assignee: data.assignee || 'Mom',
                         notes: data.notes || '',
                         status: 'To Do'
